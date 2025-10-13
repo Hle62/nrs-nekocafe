@@ -70,7 +70,6 @@ function renderItemLists() {
     const stockListDiv = document.getElementById('stock-item-list');
     const saleListDiv = document.getElementById('sale-item-list');
 
-    // ★修正: コロンを削除
     stockListDiv.innerHTML = '<label>在庫補充商品</label><br>';
     saleListDiv.innerHTML = '<label>販売記録商品</label><br>'; 
 
@@ -148,7 +147,6 @@ function renderItemLists() {
     });
 
     // 初期表示時に合計金額をリセット
-    // ★修正: コロンを削除
     updateSaleTotalDisplay();
 }
 
@@ -206,7 +204,6 @@ function updateSaleTotalDisplay() {
         }
     });
 
-    // ★修正: コロンを削除
     totalDisplay.textContent = `合計金額 ¥${totalSales.toLocaleString()}`;
 }
 
@@ -237,7 +234,6 @@ async function attemptLogin() {
     const messageElement = document.getElementById('login-message');
     
     if (!staffName) {
-        // ★修正: コロンを削除
         messageElement.textContent = '名前を選択してください。';
         return;
     }
@@ -262,15 +258,12 @@ async function attemptLogin() {
             showTab('stock');
 
         } else if (result.error) {
-             // ★修正: コロンを削除
              messageElement.textContent = `エラー ${result.error}`;
         } else {
-            // ★修正: コロンを削除
             messageElement.textContent = 'エラー その名前はシステムに登録されていません。';
         }
     } catch (error) {
         console.error('認証エラー:', error);
-        // ★修正: コロンを削除
         messageElement.textContent = '認証エラーが発生しました。';
     }
 }
