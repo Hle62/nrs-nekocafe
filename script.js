@@ -256,7 +256,6 @@ async function checkLoginStatus() {
              showMainApp(loggedInStaff);
              return true;
         } catch (error) {
-            // エラー時もログイン画面を表示
             document.getElementById('login-section').style.display = 'block';
             document.getElementById('main-app').style.display = 'none';
             document.getElementById('login-message').textContent = 'データ取得エラーのため、リロードまたは再ログインしてください。';
@@ -296,13 +295,13 @@ async function attemptLogin() {
         if (result.authenticated) {
             localStorage.setItem('loggedInStaff', staffName);
             
-            // 認証成功直後、商品ロードが始まる前にメッセージを表示
+            // Step 1: 認証成功直後、商品ロードが始まる前にメッセージを表示
             document.getElementById('login-message').textContent = '認証完了、商品リストをロード中...'; 
             
-            // 商品データ取得を待ってから showMainApp() を呼び出す
+            // Step 2: 商品データ取得を待ってから showMainApp() を呼び出す
             await fetchProductData(); 
             
-            // 全てのデータが揃った後、メイン画面を表示
+            // Step 3: 全てのデータが揃った後、メイン画面を表示
             showMainApp(staffName);
             
             // ログインメッセージをクリア
