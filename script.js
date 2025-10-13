@@ -14,6 +14,18 @@ function logout() {
 }
 // ----------------------------------
 
+// ★新規関数: メインアプリを表示する処理を統合
+function showMainApp(staffName) {
+    document.getElementById('current-staff-display').textContent = `${staffName}さんとしてログイン中`;
+    
+    // 非表示を解除し、アプリ全体を描画
+    const mainApp = document.getElementById('main-app');
+    mainApp.style.display = 'block';
+    mainApp.style.visibility = 'visible';
+    
+    showTab('stock');
+}
+
 
 // --- データの取得 ---
 
@@ -219,23 +231,18 @@ function checkLoginStatus() {
     const loggedInStaff = localStorage.getItem('loggedInStaff');
     
     if (loggedInStaff) {
-        // ★修正ポイント1: メインアプリの表示を、商品のロード後に変更
+        document.getElementById('login-section').style.display = 'none';
         
-        // メインアプリの表示は一旦スキップし、商品データ取得後に移す
-        // document.getElementById('login-section').style.display = 'none';
-        // document.getElementById('main-app').style.display = 'block';
-
         // 担当者名だけ先に設定
         document.getElementById('current-staff-display').textContent = `${loggedInStaff}さんとしてログイン中`;
         
-        // 認証セクションを非表示にし、メインセクションを表示する準備だけ行う
-        document.getElementById('login-section').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
-        
-        // 商品情報取得とフォーム準備
+        // ★修正ポイント: 商品情報取得（非同期）が完了するのを待ってから、メインアプリを表示する処理を呼ぶ
         fetchProductData().then(() => {
-            // 商品リストが表示された後、タブを初期化
-            showTab('stock');
+            showMainApp(loggedInStaff);
+        }).catch(error => {
+            // エラーが発生した場合も、少なくともログインセクションは非表示にする
+            document.getElementById('login-section').style.display = 'none';
+            console.error('データ取得エラーにより画面表示を完了できませんでした。', error);
         });
         
         return true;
@@ -266,16 +273,10 @@ async function attemptLogin() {
         if (result.authenticated) {
             localStorage.setItem('loggedInStaff', staffName);
             
-            // ログインセクションを非表示にする
             document.getElementById('login-section').style.display = 'none';
-            // メインセクションを表示し、担当者名を設定
-            document.getElementById('main-app').style.display = 'block'; 
-            document.getElementById('current-staff-display').textContent = `${staffName}さんとしてログイン中`; 
-            messageElement.textContent = '';
-            
-            // ★修正ポイント2: 商品データ取得が完了してからタブを初期化
+            // ★修正ポイント: 非同期処理を待ってから showMainApp() を呼び出す
             await fetchProductData(); 
-            showTab('stock');
+            showMainApp(staffName);
 
         } else if (result.error) {
              messageElement.textContent = `エラー ${result.error}`;
@@ -473,8 +474,8 @@ async function submitData(event, type) {
 
 // --- ページロード時の初期処理 ---
 document.addEventListener('DOMContentLoaded', () => {
-    const loggedIn = checkLoginStatus();
-    if (!loggedIn) {
+    // ログイン情報がない場合、名前リストを取得してログイン画面を表示
+    if (!checkLoginStatus()) {
         fetchStaffNames();
     }
 });

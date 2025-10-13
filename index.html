@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>猫カフェ業務管理</title>
+    <title>猫カフェ管理アプリ</title>
     <style>
-        /* --- 視認性を重視した猫カフェ風デザイン --- */
+        /* ベースカラー: 薄いピンク (#FFE8F0) と白 (#FFFFFF) */
+        /* アクセントカラー: 濃いピンク (#F08080) と濃い茶色 (#4F3F3F) */
         
         body {
             font-family: sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #FFE8F0; /* ベースの薄ピンク */
-            color: #4F3F3F; /* 全体フォント色を濃い茶色に */
+            background-color: #FFE8F0;
+            color: #4F3F3F;
         }
         #app-container {
             max-width: 600px;
@@ -23,7 +24,7 @@
             box-shadow: 0 8px 15px rgba(240, 128, 128, 0.2);
         }
         h1 {
-            color: #F08080; 
+            color: #F08080;
             text-align: center;
             border-bottom: 3px dashed #A59393;
             padding-bottom: 15px;
@@ -34,13 +35,15 @@
             padding: 10px;
         }
         #main-app {
+            /* ★修正: 初期状態では完全に非表示にする */
             display: none;
+            visibility: hidden; 
         }
         label {
             display: block;
             margin-top: 15px;
             font-weight: bold;
-            color: #4F3F3F; 
+            color: #4F3F3F;
         }
         input[type="text"], input[type="number"], select, textarea {
             width: 100%;
@@ -48,7 +51,7 @@
             margin-top: 5px;
             margin-bottom: 10px;
             box-sizing: border-box;
-            border: 1px solid #A59393; 
+            border: 1px solid #A59393;
             border-radius: 8px;
             background-color: #FFFFFF;
             color: #333;
@@ -148,6 +151,7 @@
         #logout-btn:hover {
              background-color: #8C7C7C;
         }
+
         /* --- 合計金額表示 --- */
         #sale-total-display {
             font-size: 1.3em;
@@ -183,8 +187,7 @@
             <button onclick="attemptLogin()">ログイン</button>
         </div>
 
-        <div id="main-app">
-            <div id="auth-info" class="info-display">
+        <div id="main-app" style="visibility: hidden;"> <div id="auth-info" class="info-display">
                  <div id="current-staff-display"></div>
                  <button id="logout-btn" onclick="logout()">ログアウト</button>
             </div>
