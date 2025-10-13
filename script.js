@@ -71,7 +71,7 @@ function renderItemLists() {
     const saleListDiv = document.getElementById('sale-item-list');
 
     stockListDiv.innerHTML = '<label>在庫補充商品:</label><br>';
-    // ★修正: 単価一律の表示を削除
+    // 単価一律の表示を削除済み
     saleListDiv.innerHTML = '<label>販売記録商品:</label><br>'; 
 
     productList.forEach(product => {
@@ -196,7 +196,7 @@ function updateSaleTotalDisplay() {
         
         // 関連するチェックボックスがチェックされているか確認
         const parts = input.id.split('-');
-        const productId = parts.slice(2).join('-'); // 'item-0', 'item-1'を取得
+        const productId = parts.slice(2).join('-'); 
         const checkbox = document.getElementById(`sale-${productId}`);
         
         // チェックが入っていて、数量が正の場合のみ加算
