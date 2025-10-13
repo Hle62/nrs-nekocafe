@@ -12,9 +12,11 @@
             font-family: sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #FFE8F0;
-            color: #4F3F3F;
+            background-color: #FFE8F0; /* ベースの薄ピンク */
+            color: #4F3F3F; /* 全体フォント色を濃い茶色に */
         }
+        
+        /* ★修正ポイント1: アプリコンテナを初期状態で非表示にする */
         #app-container {
             max-width: 600px;
             margin: auto;
@@ -22,9 +24,12 @@
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 8px 15px rgba(240, 128, 128, 0.2);
+            /* 初期非表示。JavaScriptで処理が完了したら表示に切り替える */
+            display: none; 
         }
+
         h1 {
-            color: #F08080;
+            color: #F08080; /* 濃いピンク */
             text-align: center;
             border-bottom: 3px dashed #A59393;
             padding-bottom: 15px;
@@ -35,14 +40,14 @@
             padding: 10px;
         }
         #main-app {
-            display: none;
-            visibility: hidden; 
+            /* main-app自体のvisibility: hiddenは、JS側で処理します */
+            display: none; 
         }
         label {
             display: block;
             margin-top: 15px;
             font-weight: bold;
-            color: #4F3F3F;
+            color: #4F3F3F; /* ラベル色を濃い茶色に */
         }
         input[type="text"], input[type="number"], select, textarea {
             width: 100%;
@@ -50,13 +55,13 @@
             margin-top: 5px;
             margin-bottom: 10px;
             box-sizing: border-box;
-            border: 1px solid #A59393;
+            border: 1px solid #A59393; /* ボーダーを濃い目の淡い茶色に */
             border-radius: 8px;
             background-color: #FFFFFF;
             color: #333;
         }
         button {
-            background-color: #F08080;
+            background-color: #F08080; /* 濃いピンク */
             color: white;
             padding: 12px 15px;
             border: none;
@@ -174,9 +179,26 @@
             transform: scale(1.2); 
             margin-right: 8px;
         }
+        
+        /* ★新規CSS: 初期ロード中のメッセージコンテナを中央に配置 */
+        #loading-message-container {
+            max-width: 600px;
+            margin: auto;
+            text-align: center;
+            margin-top: 150px; /* 中央付近に配置 */
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #F08080;
+            display: none; /* 初期は非表示 */
+        }
     </style>
 </head>
 <body>
+    
+    <div id="loading-message-container">
+        <p>🐈 アプリケーション読み込み中...</p>
+    </div>
+
     <div id="app-container">
         <h1>🐈 猫カフェ業務管理</h1>
         <div id="login-section">
@@ -214,7 +236,7 @@
             <div id="sale-form" class="form-content">
                 <form id="sale-form-data" onsubmit="submitData(event, '販売記録')">
                     <div id="sale-item-list">
-                         <p>商品リストを読み込み中...</p>
+                        <p>商品リストを読み込み中...</p>
                     </div>
                     
                     <label for="memo-sale">メモ (任意)</label>

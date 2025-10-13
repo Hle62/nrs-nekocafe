@@ -18,13 +18,28 @@ function logout() {
 function showMainApp(staffName) {
     document.getElementById('current-staff-display').textContent = `${staffName}さんとしてログイン中`;
     
-    // 非表示を解除し、アプリ全体を描画
+    // アプリ全体を描画可能にする (visibility: hiddenを解除)
     const mainApp = document.getElementById('main-app');
-    mainApp.style.display = 'block';
     mainApp.style.visibility = 'visible';
     
     // 初回は「在庫補充」タブを表示
     showTab('stock');
+}
+
+// ★新規関数: ローディング表示のトグル
+function toggleLoading(isVisible) {
+    const loadingContainer = document.getElementById('loading-message-container');
+    const appContainer = document.getElementById('app-container');
+    
+    if (isVisible) {
+        // 全体を隠し、ローディングメッセージを表示
+        appContainer.style.display = 'none';
+        loadingContainer.style.display = 'block';
+    } else {
+        // ローディングメッセージを隠し、アプリ全体を表示
+        loadingContainer.style.display = 'none';
+        appContainer.style.display = 'block';
+    }
 }
 
 
@@ -32,6 +47,9 @@ function showMainApp(staffName) {
 
 // 従業員名リストを取得し、プルダウンを構築
 async function fetchStaffNames() {
+    // ★修正: 従業員リスト取得中もローディングメッセージを表示
+    toggleLoading(true);
+    
     const staffUrl = `${GAS_WEB_APP_URL}?action=getStaffNames`;
     const staffDropdown = document.getElementById('login-staff');
     
@@ -42,6 +60,9 @@ async function fetchStaffNames() {
         if (staffNames.error) {
              throw new Error(staffNames.error);
         }
+        
+        // 取得完了後、ログイン画面を表示に戻す
+        toggleLoading(false);
 
         staffDropdown.innerHTML = '<option value="">-- 名前を選択してください --</option>';
 
@@ -55,6 +76,7 @@ async function fetchStaffNames() {
         console.error('従業員リスト取得エラー:', error);
         staffDropdown.innerHTML = '<option value="">エラー: 従業員リスト取得失敗</option>';
         alert(`従業員リストの取得に失敗しました。GASエラー: ${error.message}`);
+        toggleLoading(false); // エラー時もアプリ本体を表示
     }
 }
 
@@ -63,7 +85,7 @@ async function fetchProductData() {
     const productUrl = `${GAS_WEB_APP_URL}?action=getProducts`;
     
     try {
-        // Step 1: GASからのデータ取得中に表示
+        // Step 1: GASからのデータ取得中に表示 (fetchの前にメッセージ更新)
         const loadingMessageFetch = '<p>商品リストデータをGASから取得中...</p>';
         document.getElementById('stock-item-list').innerHTML = loadingMessageFetch;
         document.getElementById('sale-item-list').innerHTML = loadingMessageFetch;
@@ -76,7 +98,6 @@ async function fetchProductData() {
         }
         
         // Step 2: データ取得完了後、DOM構築中に表示 (ユーザーフィードバック)
-        // 商品データの取得が成功した後、即座に次の描画処理メッセージに切り替える
         const loadingMessageRender = '<p>リスト要素描画中...</p>';
         document.getElementById('stock-item-list').innerHTML = loadingMessageRender;
         document.getElementById('sale-item-list').innerHTML = loadingMessageRender;
@@ -95,6 +116,7 @@ async function fetchProductData() {
         document.getElementById('stock-item-list').innerHTML = '<p style="color:red;">エラー: 商品リスト取得失敗。再ログインしてください。</p>';
         document.getElementById('sale-item-list').innerHTML = '<p style="color:red;">エラー: 商品リスト取得失敗。再ログインしてください。</p>';
         alert(`商品情報の取得に失敗しました。GASエラー: ${error.message}`);
+        throw error; // ログイン処理側にエラーを投げる
     }
 }
 
@@ -251,11 +273,10 @@ function checkLoginStatus() {
         // 担当者名だけ先に設定
         document.getElementById('current-staff-display').textContent = `${loggedInStaff}さんとしてログイン中`;
         
-        // ★修正ポイント: 商品情報取得（非同期）が完了するのを待ってから、メインアプリを表示する
+        // ★修正ポイント: メインアプリの表示を、fetchProductDataが完了するまで遅延させる
         fetchProductData().then(() => {
             showMainApp(loggedInStaff);
         }).catch(error => {
-            // エラーが発生した場合も、ユーザーに状況を伝える
             document.getElementById('login-section').style.display = 'block';
             document.getElementById('login-message').textContent = 'データ取得エラーのため、リロードまたは再ログインしてください。';
             console.error('データ取得エラーにより画面表示を完了できませんでした。', error);
@@ -293,7 +314,6 @@ async function attemptLogin() {
             document.getElementById('login-section').style.display = 'none';
             
             // ★修正ポイント: 認証成功直後、商品ロードが始まる前にメッセージを表示
-            // 商品リストが読み込まれるまでの間も、このメッセージが表示され続けます。
             document.getElementById('login-message').textContent = '認証完了、商品リストをロード中...'; 
             
             // 商品データ取得を待ってから showMainApp() を呼び出す
@@ -529,5 +549,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ログイン情報がない場合、名前リストを取得してログイン画面を表示
     if (!checkLoginStatus()) {
         fetchStaffNames();
+        
+        // ログイン情報がない場合は、アプリコンテナを表示に戻す
+        document.getElementById('app-container').style.display = 'block';
     }
 });
