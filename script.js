@@ -5,15 +5,19 @@ const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwRe84cPNCe-JxW
 // ★ 2. 【設定必須】販売記録に適用する一律の商品単価をここに設定してください
 const SALE_UNIT_PRICE = 300; // 例: 全ての商品を300円と仮定
 
-let productList = [];
+let productList = []; // 商品情報を格納
 
+// --- ログアウト関数 ---
 function logout() {
     localStorage.removeItem('loggedInStaff');
     window.location.reload();
 }
+// ----------------------------------
+
 
 // --- データの取得 ---
 
+// 従業員名リストを取得し、プルダウンを構築
 async function fetchStaffNames() {
     const staffUrl = `${GAS_WEB_APP_URL}?action=getStaffNames`;
     const staffDropdown = document.getElementById('login-staff');
@@ -41,20 +45,23 @@ async function fetchStaffNames() {
     }
 }
 
+// 商品データを取得し、フォームのチェックボックスに反映
 async function fetchProductData() {
     const productUrl = `${GAS_WEB_APP_URL}?action=getProducts`;
     
     try {
         const response = await fetch(productUrl);
+        
         const fullProductList = await response.json(); 
 
         if (fullProductList.error) {
              throw new Error(fullProductList.error);
         }
         
+        // 商品名と連番のみを保持
         productList = fullProductList.map((p, index) => ({
             name: p.name,
-            id: `item-${index}`
+            id: `item-${index}` // 連番ID
         }));
         
         renderItemLists();
@@ -64,6 +71,7 @@ async function fetchProductData() {
     }
 }
 
+// チェックボックスと数量フィールドを生成する関数
 function renderItemLists() {
     const stockListDiv = document.getElementById('stock-item-list');
     const saleListDiv = document.getElementById('sale-item-list');
@@ -113,6 +121,7 @@ function renderItemLists() {
         saleListDiv.insertAdjacentHTML('beforeend', saleHtml);
     });
     
+    // イベントリスナーを一括で設定
     document.querySelectorAll('input[type="checkbox"][name$="_item"]').forEach(checkbox => {
         checkbox.addEventListener('change', (e) => {
             const parts = e.target.id.split('-');
@@ -123,11 +132,13 @@ function renderItemLists() {
             if (controls) {
                 controls.style.display = e.target.checked ? 'block' : 'none';
                 
+                // チェックを外したら数量を0に戻す
                 const input = document.getElementById(`qty-${idPrefix}-${productId}`);
                 if (!e.target.checked && input) {
                     input.value = 0;
                 }
                 
+                // チェックボックス変更時に合計金額を再計算
                 if (idPrefix === 'sale') {
                     updateSaleTotalDisplay();
                 }
@@ -135,14 +146,17 @@ function renderItemLists() {
         });
     });
 
+    // 数量入力フィールドにchangeとinputイベントリスナーを設定（リアルタイム反映のため）
     document.querySelectorAll('input[id^="qty-sale-"]').forEach(input => {
         input.addEventListener('input', updateSaleTotalDisplay);
         input.addEventListener('change', updateSaleTotalDisplay);
     });
 
+    // 初期表示時に合計金額をリセット
     updateSaleTotalDisplay();
 }
 
+// 数量ボタンの処理関数
 function updateQuantity(inputId, value, type) {
     const input = document.getElementById(inputId);
     let currentValue = parseInt(input.value) || 0;
@@ -155,24 +169,28 @@ function updateQuantity(inputId, value, type) {
     
     input.value = newValue;
     
+    // イベントを手動で発火させ、リアルタイム計算をトリガー
     if (type === 'sale') {
         const event = new Event('change');
         input.dispatchEvent(event); 
     }
 }
 
+// 個別リセット関数
 function resetSingleQuantity(inputId, type) {
     const input = document.getElementById(inputId);
     if (input) {
         input.value = 0;
     }
     
+    // イベントを手動で発火させる
     if (type === 'sale') {
         const event = new Event('change');
         input.dispatchEvent(event);
     }
 }
 
+// 販売記録の合計金額をリアルタイムで更新する関数
 function updateSaleTotalDisplay() {
     const totalDisplay = document.getElementById('sale-total-display');
     const saleQtyInputs = document.querySelectorAll('input[id^="qty-sale-"]');
@@ -181,10 +199,12 @@ function updateSaleTotalDisplay() {
     saleQtyInputs.forEach(input => {
         const quantity = parseInt(input.value) || 0;
         
+        // 関連するチェックボックスがチェックされているか確認
         const parts = input.id.split('-');
         const productId = parts.slice(2).join('-'); 
         const checkbox = document.getElementById(`sale-${productId}`);
         
+        // チェックが入っていて、数量が正の場合のみ加算
         if (checkbox && checkbox.checked && quantity > 0) {
             totalSales += quantity * SALE_UNIT_PRICE;
         }
@@ -199,12 +219,24 @@ function checkLoginStatus() {
     const loggedInStaff = localStorage.getItem('loggedInStaff');
     
     if (loggedInStaff) {
-        document.getElementById('login-section').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
+        // ★修正ポイント1: メインアプリの表示を、商品のロード後に変更
+        
+        // メインアプリの表示は一旦スキップし、商品データ取得後に移す
+        // document.getElementById('login-section').style.display = 'none';
+        // document.getElementById('main-app').style.display = 'block';
+
+        // 担当者名だけ先に設定
         document.getElementById('current-staff-display').textContent = `${loggedInStaff}さんとしてログイン中`;
         
-        fetchProductData();
-        showTab('stock');
+        // 認証セクションを非表示にし、メインセクションを表示する準備だけ行う
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+        
+        // 商品情報取得とフォーム準備
+        fetchProductData().then(() => {
+            // 商品リストが表示された後、タブを初期化
+            showTab('stock');
+        });
         
         return true;
     }
@@ -234,11 +266,14 @@ async function attemptLogin() {
         if (result.authenticated) {
             localStorage.setItem('loggedInStaff', staffName);
             
+            // ログインセクションを非表示にする
             document.getElementById('login-section').style.display = 'none';
+            // メインセクションを表示し、担当者名を設定
             document.getElementById('main-app').style.display = 'block'; 
             document.getElementById('current-staff-display').textContent = `${staffName}さんとしてログイン中`; 
             messageElement.textContent = '';
             
+            // ★修正ポイント2: 商品データ取得が完了してからタブを初期化
             await fetchProductData(); 
             showTab('stock');
 
