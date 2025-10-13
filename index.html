@@ -43,6 +43,12 @@
             display: inline-block !important;
             margin-top: 0 !important;
         }
+        /* ★ 個別リセットボタンのスタイル */
+        .quantity-controls .reset-btn {
+            background-color: red;
+            margin-left: 10px;
+            padding: 5px 10px;
+        }
     </style>
 </head>
 <body>
@@ -85,10 +91,7 @@
                         <label for="memo-stock">メモ:</label>
                         <textarea id="memo-stock"></textarea><br>
 
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                            <button type="button" onclick="resetQuantities('stock')" style="background-color: red;">数量を0にリセット</button>
-                            <button type="submit" style="margin-top: 0;">在庫補充を記録</button>
-                        </div>
+                        <button type="submit">在庫補充を記録</button>
                     </form>
                 </div>
 
@@ -121,10 +124,7 @@
 
                         <p style="margin-top: 10px; font-style: italic;">※ 売上金額は自動計算されます。</p>
 
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-                            <button type="button" onclick="resetQuantities('sale')" style="background-color: red;">数量を0にリセット</button>
-                            <button type="submit" style="margin-top: 0;">販売を記録</button>
-                        </div>
+                        <button type="submit">販売を記録</button>
                     </form>
                 </div>
 
