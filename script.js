@@ -76,6 +76,7 @@ async function fetchProductData() {
         }
         
         // Step 2: データ取得完了後、DOM構築中に表示 (ユーザーフィードバック)
+        // 商品データの取得が成功した後、即座に次の描画処理メッセージに切り替える
         const loadingMessageRender = '<p>リスト要素描画中...</p>';
         document.getElementById('stock-item-list').innerHTML = loadingMessageRender;
         document.getElementById('sale-item-list').innerHTML = loadingMessageRender;
@@ -292,11 +293,15 @@ async function attemptLogin() {
             document.getElementById('login-section').style.display = 'none';
             
             // ★修正ポイント: 認証成功直後、商品ロードが始まる前にメッセージを表示
+            // 商品リストが読み込まれるまでの間も、このメッセージが表示され続けます。
             document.getElementById('login-message').textContent = '認証完了、商品リストをロード中...'; 
             
             // 商品データ取得を待ってから showMainApp() を呼び出す
             await fetchProductData(); 
             showMainApp(staffName);
+            
+            // ログインメッセージをクリア
+            document.getElementById('login-message').textContent = '';
 
         } else if (result.error) {
              messageElement.textContent = `エラー ${result.error}`;
