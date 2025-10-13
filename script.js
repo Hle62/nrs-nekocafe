@@ -243,8 +243,10 @@ async function submitData(event, type) {
     
     if (type === '在庫補充') {
         const selectedItems = form.querySelectorAll('input[name="stock_item"]:checked');
-        if (selectedItems.length === 0) {
-            alert('補充する商品を1つ以上選択してください。');
+        const memo = form.querySelector('#memo-stock').value;
+
+        if (selectedItems.length === 0 && memo.trim() === '') {
+            alert('補充する商品を1つ以上選択するか、メモを入力してください。');
             return;
         }
         
@@ -264,7 +266,7 @@ async function submitData(event, type) {
                     "item_type": "stock",
                     "商品名": item.value,
                     "数量": quantity,
-                    "メモ": form.querySelector('#memo-stock').value
+                    "メモ": memo
                 });
             });
         } catch(e) {
@@ -274,6 +276,7 @@ async function submitData(event, type) {
         
     } else if (type === '経費申請') {
         // 経費申請は単一送信のまま
+        // 経費申請フォームのバリデーションはHTMLのrequired属性に依存
         records.push({
             "item_type": "expense",
             "費目": form.querySelector('#category-expense').value,
@@ -327,7 +330,7 @@ async function submitData(event, type) {
     // ★ 複数データ送信をGASが一括処理できるように、配列を送信
     const bulkData = {
         "type": type, 
-        "担当者名": loggedInStaff, // ★修正済み: 正しいキーを使用
+        "担当者名": loggedInStaff, // 正しいキーを使用
         "records": records 
     };
 
@@ -342,6 +345,7 @@ async function submitData(event, type) {
             alert(`${type}のデータ ${records.length} 件が正常に送信され、Discordに通知されました！`);
             form.reset();
         } else if (result.result === 'error') {
+             // 致命的なエラーはここに来る可能性が高い
              alert(`送信エラーが発生しました (GASエラー: ${result.message})。システム管理者に連絡してください。`);
         } else {
             alert('データの送信に失敗しました。予期せぬ応答です。');
