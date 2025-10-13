@@ -70,9 +70,9 @@ function renderItemLists() {
     const stockListDiv = document.getElementById('stock-item-list');
     const saleListDiv = document.getElementById('sale-item-list');
 
-    stockListDiv.innerHTML = '<label>在庫補充商品:</label><br>';
-    // 単価一律の表示を削除済み
-    saleListDiv.innerHTML = '<label>販売記録商品:</label><br>'; 
+    // ★修正: コロンを削除
+    stockListDiv.innerHTML = '<label>在庫補充商品</label><br>';
+    saleListDiv.innerHTML = '<label>販売記録商品</label><br>'; 
 
     productList.forEach(product => {
         const productId = product.id; 
@@ -84,7 +84,7 @@ function renderItemLists() {
                 <label for="stock-${productId}" style="display: inline; font-weight: normal;">${product.name}</label>
                 
                 <div id="stock-qty-controls-${productId}" class="quantity-controls" style="margin-top: 5px; margin-left: 20px; display: none;">
-                    <label for="qty-stock-${productId}" style="font-weight: normal; display: inline-block; width: 50px;">数量:</label>
+                    <label for="qty-stock-${productId}" style="font-weight: normal; display: inline-block; width: 50px;">数量</label>
                     <input type="number" id="qty-stock-${productId}" min="0" value="0">
                     <button type="button" onclick="updateQuantity('qty-stock-${productId}', 1, 'stock')">+1</button>
                     <button type="button" onclick="updateQuantity('qty-stock-${productId}', 5, 'stock')">+5</button>
@@ -103,7 +103,7 @@ function renderItemLists() {
                 <label for="sale-${productId}" style="display: inline; font-weight: normal;">${product.name}</label>
                 
                 <div id="sale-qty-controls-${productId}" class="quantity-controls" style="margin-top: 5px; margin-left: 20px; display: none;">
-                    <label for="qty-sale-${productId}" style="font-weight: normal; display: inline-block; width: 50px;">数量:</label>
+                    <label for="qty-sale-${productId}" style="font-weight: normal; display: inline-block; width: 50px;">数量</label>
                     <input type="number" id="qty-sale-${productId}" min="0" value="0" data-item-id="${productId}">
                     <button type="button" onclick="updateQuantity('qty-sale-${productId}', 1, 'sale')">+1</button>
                     <button type="button" onclick="updateQuantity('qty-sale-${productId}', 5, 'sale')">+5</button>
@@ -148,6 +148,7 @@ function renderItemLists() {
     });
 
     // 初期表示時に合計金額をリセット
+    // ★修正: コロンを削除
     updateSaleTotalDisplay();
 }
 
@@ -205,7 +206,8 @@ function updateSaleTotalDisplay() {
         }
     });
 
-    totalDisplay.textContent = `合計金額: ¥${totalSales.toLocaleString()}`;
+    // ★修正: コロンを削除
+    totalDisplay.textContent = `合計金額 ¥${totalSales.toLocaleString()}`;
 }
 
 
@@ -235,6 +237,7 @@ async function attemptLogin() {
     const messageElement = document.getElementById('login-message');
     
     if (!staffName) {
+        // ★修正: コロンを削除
         messageElement.textContent = '名前を選択してください。';
         return;
     }
@@ -259,12 +262,15 @@ async function attemptLogin() {
             showTab('stock');
 
         } else if (result.error) {
-             messageElement.textContent = `エラー: ${result.error}`;
+             // ★修正: コロンを削除
+             messageElement.textContent = `エラー ${result.error}`;
         } else {
-            messageElement.textContent = 'エラー: その名前はシステムに登録されていません。';
+            // ★修正: コロンを削除
+            messageElement.textContent = 'エラー その名前はシステムに登録されていません。';
         }
     } catch (error) {
         console.error('認証エラー:', error);
+        // ★修正: コロンを削除
         messageElement.textContent = '認証エラーが発生しました。';
     }
 }
@@ -354,7 +360,7 @@ async function submitData(event, type) {
         
     } else if (type === '経費申請') {
         const memo = form.querySelector('#memo-expense').value;
-        // ★修正: メモの必須チェックを削除
+        // メモの必須チェックは削除済み
 
         records.push({
             "item_type": "expense",
