@@ -108,13 +108,32 @@
             background-color: #ec971f;
         }
         .info-display {
-            text-align: right;
+            display: flex; /* ★修正: Flexboxを有効にして横並びにする */
+            justify-content: space-between; /* ★修正: 左右に配置 */
+            align-items: center; /* 垂直方向中央寄せ */
             font-size: 0.9em;
             color: #555;
             margin-bottom: 10px;
             border-bottom: 1px dashed #ccc;
             padding-bottom: 5px;
         }
+        #current-staff-display {
+             /* 既存の表示要素をフレックスアイテムとして扱う */
+             font-weight: bold;
+             color: green;
+        }
+        #logout-btn {
+             /* ログアウトボタン用のスタイルを調整 */
+             background-color: #dc3545;
+             padding: 5px 10px;
+             font-size: 0.8em;
+             width: auto;
+             margin: 0;
+        }
+        #logout-btn:hover {
+             background-color: #c82333;
+        }
+
         /* 合計金額表示のスタイル */
         #sale-total-display {
             font-size: 1.2em;
@@ -140,7 +159,10 @@
         </div>
 
         <div id="main-app">
-            <div class="info-display" id="current-staff-display"></div>
+            <div id="auth-info" class="info-display">
+                 <div id="current-staff-display"></div>
+                 <button id="logout-btn" onclick="logout()">ログアウト</button>
+            </div>
             
             <div class="tab-bar">
                 <button class="tab-button" onclick="showTab('stock')">在庫補充</button>

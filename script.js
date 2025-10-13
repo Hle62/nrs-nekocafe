@@ -7,6 +7,14 @@ const SALE_UNIT_PRICE = 300; // 例: 全ての商品を300円と仮定
 
 let productList = []; // 商品情報を格納
 
+// --- ログアウト関数 (新規追加) ---
+function logout() {
+    localStorage.removeItem('loggedInStaff');
+    window.location.reload();
+}
+// ----------------------------------
+
+
 // --- データの取得 ---
 
 // 従業員名リストを取得し、プルダウンを構築
