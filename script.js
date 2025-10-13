@@ -354,7 +354,7 @@ async function submitData(event, type) {
         
     } else if (type === '経費申請') {
         const memo = form.querySelector('#memo-expense').value;
-        // メモの必須チェックを削除
+        // ★修正: メモの必須チェックを削除
 
         records.push({
             "item_type": "expense",
