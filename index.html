@@ -7,7 +7,7 @@
     <style>
         body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 15px; }
         .input-section { border: 1px solid #ccc; padding: 15px; margin-top: 20px; border-radius: 8px; }
-        .form-group { display: none; } /* 元のdisplay: none; は不要になったため削除 */
+        .form-group { display: none; }
         label { display: block; margin-top: 10px; font-weight: bold; }
         input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
         button { padding: 10px 15px; margin-top: 15px; background-color: #333; color: white; border: none; border-radius: 5px; cursor: pointer; }
@@ -85,7 +85,10 @@
                         <label for="memo-stock">メモ:</label>
                         <textarea id="memo-stock"></textarea><br>
 
-                        <button type="submit">在庫補充を記録</button>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                            <button type="button" onclick="resetQuantities('stock')" style="background-color: red;">数量を0にリセット</button>
+                            <button type="submit" style="margin-top: 0;">在庫補充を記録</button>
+                        </div>
                     </form>
                 </div>
 
@@ -117,8 +120,11 @@
                         </div>
 
                         <p style="margin-top: 10px; font-style: italic;">※ 売上金額は自動計算されます。</p>
-                        
-                        <button type="submit">販売を記録</button>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                            <button type="button" onclick="resetQuantities('sale')" style="background-color: red;">数量を0にリセット</button>
+                            <button type="submit" style="margin-top: 0;">販売を記録</button>
+                        </div>
                     </form>
                 </div>
 
