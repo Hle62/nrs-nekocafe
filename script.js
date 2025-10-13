@@ -63,18 +63,22 @@ async function fetchProductData() {
     const productUrl = `${GAS_WEB_APP_URL}?action=getProducts`;
     
     try {
-        // ★修正: ローディングメッセージを表示
-        const loadingMessage = '<p>商品リストを**高速**で取得中...</p>';
-        document.getElementById('stock-item-list').innerHTML = loadingMessage;
-        document.getElementById('sale-item-list').innerHTML = loadingMessage;
+        // Step 1: GASからのデータ取得中に表示
+        const loadingMessageFetch = '<p>商品リストデータをGASから取得中...</p>';
+        document.getElementById('stock-item-list').innerHTML = loadingMessageFetch;
+        document.getElementById('sale-item-list').innerHTML = loadingMessageFetch;
         
         const response = await fetch(productUrl);
-        
         const fullProductList = await response.json(); 
 
         if (fullProductList.error) {
              throw new Error(fullProductList.error);
         }
+        
+        // Step 2: データ取得完了後、DOM構築中に表示 (ユーザーフィードバック)
+        const loadingMessageRender = '<p>リスト要素描画中...</p>';
+        document.getElementById('stock-item-list').innerHTML = loadingMessageRender;
+        document.getElementById('sale-item-list').innerHTML = loadingMessageRender;
         
         // 商品名と連番のみを保持
         productList = fullProductList.map((p, index) => ({
@@ -82,10 +86,11 @@ async function fetchProductData() {
             id: `item-${index}` // 連番ID
         }));
         
+        // DOM構築の実行
         renderItemLists();
     } catch (error) {
         console.error('商品情報取得エラー:', error);
-        // ★修正: エラーメッセージを具体的に
+        // エラーメッセージを具体的に
         document.getElementById('stock-item-list').innerHTML = '<p style="color:red;">エラー: 商品リスト取得失敗。再ログインしてください。</p>';
         document.getElementById('sale-item-list').innerHTML = '<p style="color:red;">エラー: 商品リスト取得失敗。再ログインしてください。</p>';
         alert(`商品情報の取得に失敗しました。GASエラー: ${error.message}`);
@@ -245,7 +250,7 @@ function checkLoginStatus() {
         // 担当者名だけ先に設定
         document.getElementById('current-staff-display').textContent = `${loggedInStaff}さんとしてログイン中`;
         
-        // ★修正ポイント: 非同期処理を待ってから、メインアプリを表示する
+        // ★修正ポイント: 商品情報取得（非同期）が完了するのを待ってから、メインアプリを表示する
         fetchProductData().then(() => {
             showMainApp(loggedInStaff);
         }).catch(error => {
@@ -272,8 +277,8 @@ async function attemptLogin() {
         return;
     }
     
-    // ★修正: ログイン成功後、商品のロード開始時にメッセージを更新
-    messageElement.textContent = '認証成功... 商品リストをロード中';
+    // ★修正: 認証開始時のメッセージを表示
+    messageElement.textContent = '認証中...';
 
     const authUrl = `${GAS_WEB_APP_URL}?staffName=${encodeURIComponent(staffName)}`;
 
@@ -286,7 +291,10 @@ async function attemptLogin() {
             
             document.getElementById('login-section').style.display = 'none';
             
-            // ★修正ポイント: 商品データ取得を待ってから showMainApp() を呼び出す
+            // ★修正ポイント: 認証成功直後、商品ロードが始まる前にメッセージを表示
+            document.getElementById('login-message').textContent = '認証完了、商品リストをロード中...'; 
+            
+            // 商品データ取得を待ってから showMainApp() を呼び出す
             await fetchProductData(); 
             showMainApp(staffName);
 
@@ -459,7 +467,7 @@ async function submitData(event, type) {
 
     const bulkData = {
         "type": type, 
-        "담당者명": loggedInStaff,
+        "担当者名": loggedInStaff,
         "records": records 
     };
 
@@ -504,7 +512,7 @@ async function submitData(event, type) {
         console.error('通信エラー:', error);
         alert(`致命的な通信エラーが発生しました。システム管理者に連絡してください。`);
     } finally {
-        // ★修正: 処理の成功・失敗に関わらずボタンの状態を戻す
+        // 処理の成功・失敗に関わらずボタンの状態を戻す
         submitButton.textContent = originalButtonText;
         submitButton.disabled = false;
     }
