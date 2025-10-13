@@ -7,7 +7,7 @@ const SALE_UNIT_PRICE = 300; // 例: 全ての商品を300円と仮定
 
 let productList = []; // 商品情報を格納
 
-// --- ログアウト関数 (新規追加) ---
+// --- ログアウト関数 ---
 function logout() {
     localStorage.removeItem('loggedInStaff');
     window.location.reload();
@@ -86,12 +86,12 @@ function renderItemLists() {
         
         // 1. 在庫補充リスト (stock)
         const stockHtml = `
-            <div style="border: 1px solid #eee; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
+            <div class="item-box">
                 <input type="checkbox" id="stock-${productId}" name="stock_item" value="${product.name}" style="width: auto;">
-                <label for="stock-${productId}" style="display: inline; font-weight: normal;">${product.name}</label>
+                <label for="stock-${productId}" style="display: inline; font-weight: normal; color: #333;">${product.name}</label>
                 
                 <div id="stock-qty-controls-${productId}" class="quantity-controls" style="margin-top: 5px; margin-left: 20px; display: none;">
-                    <label for="qty-stock-${productId}" style="font-weight: normal; display: inline-block; width: 50px;">数量</label>
+                    <label for="qty-stock-${productId}" style="font-weight: normal; display: inline-block; width: 50px; margin-top: 0;">数量</label>
                     <input type="number" id="qty-stock-${productId}" min="0" value="0">
                     <button type="button" onclick="updateQuantity('qty-stock-${productId}', 1, 'stock')">+1</button>
                     <button type="button" onclick="updateQuantity('qty-stock-${productId}', 5, 'stock')">+5</button>
@@ -105,12 +105,12 @@ function renderItemLists() {
         
         // 2. 販売記録リスト (sale)
         const saleHtml = `
-            <div style="border: 1px solid #eee; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
+            <div class="item-box">
                 <input type="checkbox" id="sale-${productId}" name="sale_item" value="${product.name}" style="width: auto;">
-                <label for="sale-${productId}" style="display: inline; font-weight: normal;">${product.name}</label>
+                <label for="sale-${productId}" style="display: inline; font-weight: normal; color: #333;">${product.name}</label>
                 
                 <div id="sale-qty-controls-${productId}" class="quantity-controls" style="margin-top: 5px; margin-left: 20px; display: none;">
-                    <label for="qty-sale-${productId}" style="font-weight: normal; display: inline-block; width: 50px;">数量</label>
+                    <label for="qty-sale-${productId}" style="font-weight: normal; display: inline-block; width: 50px; margin-top: 0;">数量</label>
                     <input type="number" id="qty-sale-${productId}" min="0" value="0" data-item-id="${productId}">
                     <button type="button" onclick="updateQuantity('qty-sale-${productId}', 1, 'sale')">+1</button>
                     <button type="button" onclick="updateQuantity('qty-sale-${productId}', 5, 'sale')">+5</button>
