@@ -30,7 +30,7 @@ async function fetchStaffNames() {
     }
 }
 
-// 商品データを取得し、フォームのドロップダウンに反映
+// 商品データを取得し、フォームのチェックボックスに反映
 async function fetchProductData() {
     const productUrl = `${GAS_WEB_APP_URL}?action=getProducts`;
     
@@ -38,38 +38,94 @@ async function fetchProductData() {
         const response = await fetch(productUrl);
         productList = await response.json();
         
-        updateProductDropdowns();
+        // ★ ドロップダウンではなく、チェックボックスリストを生成
+        renderItemLists();
     } catch (error) {
         console.error('商品情報取得エラー:', error);
         alert('商品情報が取得できませんでした。');
     }
 }
 
-// フォームのドロップダウンを更新
-function updateProductDropdowns() {
-    const dropdowns = [
-        document.getElementById('item-stock'),
-        document.getElementById('item-sale')
-    ];
+// チェックボックスと数量フィールドを生成する関数
+function renderItemLists() {
+    const stockListDiv = document.getElementById('stock-item-list');
+    const saleListDiv = document.getElementById('sale-item-list');
 
-    dropdowns.forEach(select => {
-        select.innerHTML = '<option value="">-- 選択してください --</option>';
-    });
+    stockListDiv.innerHTML = '<label>在庫補充商品:</label><br>';
+    saleListDiv.innerHTML = '<label>販売記録商品:</label><br>';
 
     productList.forEach(product => {
-        const option1 = document.createElement('option');
-        option1.value = product.name;
-        option1.textContent = product.name;
-        document.getElementById('item-stock').appendChild(option1);
+        // スペース削除で一意なID生成 (DOM操作用)
+        const productId = product.name.replace(/\s/g, ''); 
 
-        const option2 = document.createElement('option');
-        option2.value = product.name;
-        option2.textContent = `${product.name} (¥${product.price.toLocaleString()})`;
-        document.getElementById('item-sale').appendChild(option2);
+        // 1. 在庫補充リスト (stock)
+        const stockHtml = `
+            <div style="border: 1px solid #eee; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
+                <input type="checkbox" id="stock-${productId}" name="stock_item" value="${product.name}" style="width: auto;">
+                <label for="stock-${productId}" style="display: inline; font-weight: normal;">${product.name}</label>
+                
+                <div id="stock-qty-controls-${productId}" class="quantity-controls" style="margin-top: 5px; margin-left: 20px; display: none;">
+                    <label for="qty-stock-${productId}" style="font-weight: normal; display: inline-block; width: 50px;">数量:</label>
+                    <input type="number" id="qty-stock-${productId}" min="1" value="1" >
+                    <button type="button" onclick="updateQuantity('qty-stock-${productId}', 1)">+1</button>
+                    <button type="button" onclick="updateQuantity('qty-stock-${productId}', 5)">+5</button>
+                    <button type="button" onclick="updateQuantity('qty-stock-${productId}', 10)">+10</button>
+                    <button type="button" onclick="updateQuantity('qty-stock-${productId}', 100)">+100</button>
+                </div>
+            </div>
+        `;
+        stockListDiv.insertAdjacentHTML('beforeend', stockHtml);
+        
+        // 2. 販売記録リスト (sale)
+        const saleHtml = `
+            <div style="border: 1px solid #eee; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
+                <input type="checkbox" id="sale-${productId}" name="sale_item" value="${product.name}" data-price="${product.price}" style="width: auto;">
+                <label for="sale-${productId}" style="display: inline; font-weight: normal;">${product.name} (¥${product.price.toLocaleString()})</label>
+                
+                <div id="sale-qty-controls-${productId}" class="quantity-controls" style="margin-top: 5px; margin-left: 20px; display: none;">
+                    <label for="qty-sale-${productId}" style="font-weight: normal; display: inline-block; width: 50px;">数量:</label>
+                    <input type="number" id="qty-sale-${productId}" min="1" value="1">
+                    <button type="button" onclick="updateQuantity('qty-sale-${productId}', 1)">+1</button>
+                    <button type="button" onclick="updateQuantity('qty-sale-${productId}', 5)">+5</button>
+                    <button type="button" onclick="updateQuantity('qty-sale-${productId}', 10)">+10</button>
+                    <button type="button" onclick="updateQuantity('qty-sale-${productId}', 100)">+100</button>
+                </div>
+            </div>
+        `;
+        saleListDiv.insertAdjacentHTML('beforeend', saleHtml);
+    });
+
+    // チェックボックスの状態変更時に数量コントロールを表示/非表示にするイベントリスナーを設定
+    document.querySelectorAll('input[type="checkbox"][name$="_item"]').forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            const idPrefix = e.target.id.startsWith('stock') ? 'stock' : 'sale';
+            const productId = e.target.id.split('-').slice(1).join('-');
+            const controls = document.getElementById(`${idPrefix}-qty-controls-${productId}`);
+            if (controls) {
+                controls.style.display = e.target.checked ? 'block' : 'none';
+            }
+        });
     });
 }
 
-// --- ページロード時の自動ログインチェック処理（NEW!）---
+// 数量ボタンの処理関数
+function updateQuantity(inputId, value) {
+    const input = document.getElementById(inputId);
+    let currentValue = parseInt(input.value) || 0;
+    
+    // 数量を追加
+    let newValue = currentValue + value;
+
+    // 負の値にならないようにする
+    if (newValue < 1) {
+        newValue = 1;
+    }
+    
+    input.value = newValue;
+}
+
+
+// --- ページロード時の自動ログインチェック処理 ---
 function checkLoginStatus() {
     const loggedInStaff = localStorage.getItem('loggedInStaff');
     
@@ -112,7 +168,7 @@ async function attemptLogin() {
 
         if (result.authenticated) {
             // ログイン成功
-            localStorage.setItem('loggedInStaff', staffName); // ★ ここで情報を保存
+            localStorage.setItem('loggedInStaff', staffName);
             
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('main-app').style.display = 'block'; 
@@ -157,9 +213,8 @@ function showTab(tabId) {
 }
 
 
-// --- データ送信処理 (省略) ---
+// --- データ送信処理 (複数データ送信対応) ---
 
-// データ送信（フォームごとに処理を分岐）
 async function submitData(event, type) {
     event.preventDefault();
     
@@ -170,70 +225,118 @@ async function submitData(event, type) {
         return;
     }
     
-    let dataToSend;
+    // 複数データを格納するための配列
+    let dataToSendArray = []; 
     const form = event.target;
     
     if (type === '在庫補充') {
-        dataToSend = {
-            "type": type,
-            "担当者名": loggedInStaff,
-            "商品名": form.querySelector('#item-stock').value,
-            "補充数量": form.querySelector('#quantity-stock').value,
-            "メモ": form.querySelector('#memo-stock').value
-        };
+        const selectedItems = form.querySelectorAll('input[name="stock_item"]:checked');
+        if (selectedItems.length === 0) {
+            alert('補充する商品を1つ以上選択してください。');
+            return;
+        }
+        
+        // エラーチェックとデータ構築
+        try {
+            selectedItems.forEach(item => {
+                const productId = item.id.split('-').slice(1).join('-');
+                const quantityInput = document.getElementById(`qty-stock-${productId}`);
+                const quantity = parseInt(quantityInput.value);
+
+                if (isNaN(quantity) || quantity < 1) {
+                     alert(`${item.value} の数量を正しく入力してください。`);
+                     throw new Error("Invalid quantity"); 
+                }
+
+                dataToSendArray.push({
+                    "type": type,
+                    "担当者名": loggedInStaff,
+                    "商品名": item.value,
+                    "補充数量": quantity,
+                    "メモ": form.querySelector('#memo-stock').value
+                });
+            });
+        } catch(e) {
+            if (e.message === "Invalid quantity") return; // エラーメッセージ表示済み
+            throw e;
+        }
+        
     } else if (type === '経費申請') {
-        dataToSend = {
+        // 経費申請は単一送信のまま
+        dataToSendArray.push({
             "type": type,
             "担当者名": loggedInStaff,
             "費目": form.querySelector('#category-expense').value,
             "金額": form.querySelector('#amount-expense').value,
             "メモ": form.querySelector('#memo-expense').value
-        };
-    } else if (type === '販売記録') {
-        const selectedItem = form.querySelector('#item-sale').value;
-        const quantity = form.querySelector('#quantity-sale').value;
-        
-        const product = productList.find(p => p.name === selectedItem);
-        const unitPrice = product ? product.price : 0;
-        const totalAmount = unitPrice * parseInt(quantity || 0);
+        });
 
-        if (totalAmount === 0 && parseInt(quantity) > 0) {
-             alert('選択した商品の単価情報が見つからないか、数量が不正です。');
-             return;
+    } else if (type === '販売記録') {
+        const selectedItems = form.querySelectorAll('input[name="sale_item"]:checked');
+        if (selectedItems.length === 0) {
+            alert('販売した商品を1つ以上選択してください。');
+            return;
         }
 
-        dataToSend = {
-            "type": type,
-            "担当者名": loggedInStaff,
-            "商品名": selectedItem,
-            "販売数量": quantity,
-            "売上金額": totalAmount // 自動計算された売上金額
-        };
+        // エラーチェックとデータ構築
+        try {
+            selectedItems.forEach(item => {
+                const productId = item.id.split('-').slice(1).join('-');
+                const quantityInput = document.getElementById(`qty-sale-${productId}`);
+                const quantity = parseInt(quantityInput.value);
+                const unitPrice = parseFloat(item.dataset.price); // HTMLのdata-price属性から単価を取得
+
+                if (isNaN(quantity) || quantity < 1 || unitPrice === 0) {
+                     alert(`${item.value} の数量を正しく入力するか、単価情報（スプシ）を確認してください。`);
+                     throw new Error("Invalid quantity or price"); 
+                }
+                
+                const totalAmount = unitPrice * quantity;
+                
+                dataToSendArray.push({
+                    "type": type,
+                    "担当者名": loggedInStaff,
+                    "商品名": item.value,
+                    "販売数量": quantity,
+                    "売上金額": totalAmount
+                });
+            });
+        } catch(e) {
+            if (e.message === "Invalid quantity or price") return; // エラーメッセージ表示済み
+            throw e;
+        }
     } else {
         alert('無効なフォームです。');
         return;
     }
 
-    // POSTリクエストの送信
-    try {
-        const response = await fetch(GAS_WEB_APP_URL, {
-            method: 'POST',
-            body: JSON.stringify(dataToSend),
-        });
-        const result = await response.json();
+    // ★ 複数データ送信をGASが一括処理できるように、ループ処理を実行
+    let successCount = 0;
 
-        if (result.result === 'success') {
-            alert(`${type}のデータが正常に送信され、Discordに通知されました！`);
-            form.reset();
-        } else if (result.result === 'error') {
-             alert(`送信エラーが発生しました (GASエラー: ${result.message})。システム管理者に連絡してください。`);
-        } else {
-            alert('データの送信に失敗しました。予期せぬ応答です。');
+    for (const dataToSend of dataToSendArray) {
+        try {
+            const response = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify(dataToSend),
+                // CROS問題解決のため headers: { 'Content-Type': 'application/json' } は意図的に削除
+            });
+            const result = await response.json();
+
+            if (result.result !== 'success') {
+                alert(`処理中にエラーが発生しました (${dataToSend.商品名} の送信失敗): ${result.message}`);
+                return; // 1つでも失敗したら処理を中断
+            }
+            successCount++;
+        } catch (error) {
+            console.error('通信エラー:', error);
+            alert(`致命的な通信エラーが発生しました (${dataToSend.商品名})。システム管理者に連絡してください。`);
+            return; // 1つでも失敗したら処理を中断
         }
-    } catch (error) {
-        console.error('通信エラー:', error);
-        alert('エラーが発生しました。システム管理者に連絡してください。');
     }
+
+    // すべての送信が成功した場合
+    alert(`${type}のデータ ${successCount} 件が正常に送信され、Discordに通知されました！`);
+    form.reset();
 }
 
 

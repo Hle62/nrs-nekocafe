@@ -7,7 +7,7 @@
     <style>
         body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 15px; }
         .input-section { border: 1px solid #ccc; padding: 15px; margin-top: 20px; border-radius: 8px; }
-        .form-group { display: none; } /* 初期状態は非表示 */
+        .form-group { display: none; } /* 元のdisplay: none; は不要になったため削除 */
         label { display: block; margin-top: 10px; font-weight: bold; }
         input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
         button { padding: 10px 15px; margin-top: 15px; background-color: #333; color: white; border: none; border-radius: 5px; cursor: pointer; }
@@ -29,6 +29,20 @@
             background-color: white; border-color: #ccc; border-bottom: 1px solid white; 
         }
         .tab-content { border: 1px solid #ccc; padding: 20px; border-radius: 0 5px 5px 5px; background-color: white; }
+        
+        /* 数量入力補助のための調整 */
+        .quantity-controls button {
+            padding: 5px 10px; 
+            margin: 0 2px 0 0;
+            margin-top: 0;
+            font-size: 0.9em;
+            background-color: #6c757d;
+        }
+        .quantity-controls input[type="number"] {
+            width: 70px !important;
+            display: inline-block !important;
+            margin-top: 0 !important;
+        }
     </style>
 </head>
 <body>
@@ -64,13 +78,9 @@
                 <div id="stock-form" class="form-content">
                     <h2>📦 在庫補充記録</h2>
                     <form onsubmit="submitData(event, '在庫補充')">
-                        <label for="item-stock">商品名:</label>
-                        <select id="item-stock" required>
-                            <option value="">-- 読み込み中 --</option>
-                        </select><br>
-
-                        <label for="quantity-stock">補充数量:</label>
-                        <input type="number" id="quantity-stock" min="1" required><br>
+                        <div id="stock-item-list">
+                            <p>商品リストを読み込み中...</p>
+                        </div>
 
                         <label for="memo-stock">メモ:</label>
                         <textarea id="memo-stock"></textarea><br>
@@ -102,13 +112,9 @@
                 <div id="sale-form" class="form-content" style="display: none;">
                     <h2>🎉 販売記録</h2>
                     <form onsubmit="submitData(event, '販売記録')">
-                        <label for="item-sale">商品名:</label>
-                        <select id="item-sale" required>
-                            <option value="">-- 読み込み中 --</option>
-                        </select><br>
-
-                        <label for="quantity-sale">販売数量:</label>
-                        <input type="number" id="quantity-sale" min="1" required><br>
+                        <div id="sale-item-list">
+                            <p>商品リストを読み込み中...</p>
+                        </div>
 
                         <p style="margin-top: 10px; font-style: italic;">※ 売上金額は自動計算されます。</p>
                         
