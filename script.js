@@ -16,6 +16,11 @@ async function fetchStaffNames() {
         const response = await fetch(staffUrl);
         const staffNames = await response.json(); 
         
+        // GASからエラーが返された場合
+        if (staffNames.error) {
+             throw new Error(staffNames.error);
+        }
+
         staffDropdown.innerHTML = '<option value="">-- 名前を選択してください --</option>';
 
         staffNames.forEach(name => {
@@ -26,6 +31,7 @@ async function fetchStaffNames() {
         });
     } catch (error) {
         console.error('従業員リスト取得エラー:', error);
+        alert(`従業員リストの取得に失敗しました。GASエラー: ${error.message}`);
         staffDropdown.innerHTML = '<option value="">エラー: リロードしてください</option>';
     }
 }
@@ -37,11 +43,16 @@ async function fetchProductData() {
     try {
         const response = await fetch(productUrl);
         productList = await response.json();
+
+        // GASからエラーが返された場合
+        if (productList.error) {
+             throw new Error(productList.error);
+        }
         
         renderItemLists();
     } catch (error) {
         console.error('商品情報取得エラー:', error);
-        alert('商品情報が取得できませんでした。');
+        alert(`商品情報の取得に失敗しました。GASエラー: ${error.message}`);
     }
 }
 
@@ -54,7 +65,8 @@ function renderItemLists() {
     saleListDiv.innerHTML = '<label>販売記録商品:</label><br>';
 
     productList.forEach(product => {
-        const productId = product.name.replace(/\s/g, ''); 
+        // 商品名からIDを生成する際に、全角スペースや特殊文字を削除
+        const productId = String(product.name).replace(/[\s\W_]/g, ''); 
 
         // 1. 在庫補充リスト (stock)
         const stockHtml = `
@@ -142,18 +154,16 @@ function checkLoginStatus() {
     const loggedInStaff = localStorage.getItem('loggedInStaff');
     
     if (loggedInStaff) {
-        // ログイン情報がLocalStorageに残っている場合、自動でメイン画面を表示
         document.getElementById('login-section').style.display = 'none';
         document.getElementById('main-app').style.display = 'block';
         document.getElementById('current-staff-display').textContent = `${loggedInStaff}さんとしてログイン中`;
         
-        // 商品情報を取得し、フォームを準備
         fetchProductData();
         showTab('stock');
         
-        return true; // 自動ログイン成功
+        return true;
     }
-    return false; // ログイン情報なし
+    return false;
 }
 
 
@@ -171,7 +181,6 @@ async function attemptLogin() {
     
     messageElement.textContent = '認証中...';
 
-    // GASで名前の存在チェックを依頼
     const authUrl = `${GAS_WEB_APP_URL}?staffName=${encodeURIComponent(staffName)}`;
 
     try {
@@ -179,7 +188,6 @@ async function attemptLogin() {
         const result = await response.json();
 
         if (result.authenticated) {
-            // ログイン成功
             localStorage.setItem('loggedInStaff', staffName);
             
             document.getElementById('login-section').style.display = 'none';
@@ -187,12 +195,11 @@ async function attemptLogin() {
             document.getElementById('current-staff-display').textContent = `${staffName}さんとしてログイン中`; 
             messageElement.textContent = '';
             
-            // フォーム表示時に商品データを取得し、フォームに反映
             await fetchProductData(); 
-            
-            // 初回は「在庫補充」タブを表示
             showTab('stock');
 
+        } else if (result.error) {
+             messageElement.textContent = `エラー: ${result.error}`;
         } else {
             messageElement.textContent = 'エラー: その名前はシステムに登録されていません。';
         }
@@ -204,7 +211,6 @@ async function attemptLogin() {
 
 // --- タブ切り替え関数 ---
 function showTab(tabId) {
-    // 1. 全てのタブボタンから 'active' クラスを外し、現在のボタンに付与
     document.querySelectorAll('.tab-button').forEach(button => {
         button.classList.remove('active');
         if (button.getAttribute('onclick').includes(`'${tabId}'`)) {
@@ -212,12 +218,10 @@ function showTab(tabId) {
         }
     });
 
-    // 2. 全てのコンテンツを非表示にし、現在のコンテンツを表示
     document.querySelectorAll('.form-content').forEach(content => {
         content.style.display = 'none';
     });
 
-    // tabId に対応するコンテンツを表示
     const contentElement = document.getElementById(`${tabId}-form`);
     if (contentElement) {
         contentElement.style.display = 'block';
@@ -237,7 +241,6 @@ async function submitData(event, type) {
         return;
     }
     
-    // 複数データを格納するための配列
     let records = []; 
     const form = event.target;
     
@@ -245,18 +248,14 @@ async function submitData(event, type) {
         const selectedItems = form.querySelectorAll('input[name="stock_item"]:checked');
         const memo = form.querySelector('#memo-stock').value;
 
-        if (selectedItems.length === 0) {
-            if (memo.trim() === '') {
-                alert('補充する商品を1つ以上選択するか、メモを入力してください。');
-                return;
-            }
-            // メモのみの送信を許可するため、ここでrecords.pushは行わない
+        if (selectedItems.length === 0 && memo.trim() === '') {
+             alert('補充する商品を1つ以上選択するか、メモを入力してください。');
+             return;
         }
         
-        // エラーチェックとデータ構築
         try {
             selectedItems.forEach(item => {
-                const productId = item.id.split('-').slice(1).join('-');
+                const productId = String(item.id).split('-').slice(1).join('-');
                 const quantityInput = document.getElementById(`qty-stock-${productId}`);
                 const quantity = parseInt(quantityInput.value);
 
@@ -273,18 +272,14 @@ async function submitData(event, type) {
                 });
             });
 
-            // 商品が未選択でメモのみの場合の処理 (recordsが空になるため、ここでは処理しない)
+            // 商品が未選択でメモのみの場合
             if (records.length === 0 && memo.trim() !== '') {
-                 // 仮のレコードを作成（スプレッドシートの形式を維持するため）
                  records.push({
                      "item_type": "stock_memo",
-                     "商品名": 'メモのみ',
+                     "商品名": 'メモのみ', // GASでこの値がシートのどの列に入るか確認してください
                      "数量": 0,
                      "メモ": memo
                  });
-            } else if (records.length === 0 && memo.trim() === '') {
-                 alert('補充する商品を1つ以上選択するか、メモを入力してください。');
-                 return;
             }
 
         } catch(e) {
@@ -293,7 +288,6 @@ async function submitData(event, type) {
         }
         
     } else if (type === '経費申請') {
-        // 経費申請は単一送信のまま
         records.push({
             "item_type": "expense",
             "費目": form.querySelector('#category-expense').value,
@@ -308,10 +302,9 @@ async function submitData(event, type) {
             return;
         }
 
-        // エラーチェックとデータ構築
         try {
             selectedItems.forEach(item => {
-                const productId = item.id.split('-').slice(1).join('-');
+                const productId = String(item.id).split('-').slice(1).join('-');
                 const quantityInput = document.getElementById(`qty-sale-${productId}`);
                 const quantity = parseInt(quantityInput.value);
                 const unitPrice = parseFloat(item.dataset.price);
@@ -344,10 +337,9 @@ async function submitData(event, type) {
         return;
     }
 
-    // ★ 複数データ送信をGASが一括処理できるように、配列を送信
     const bulkData = {
         "type": type, 
-        "担当者名": loggedInStaff, // 正しいキーを使用
+        "担当者名": loggedInStaff,
         "records": records 
     };
 
@@ -357,7 +349,7 @@ async function submitData(event, type) {
             body: JSON.stringify(bulkData),
         });
 
-        // 通信が成功したが、GAS側でエラーが発生した可能性があるためJSON応答を解析
+        // 応答がHTTP 200 OKでも、GAS側でエラーのJSONが返る可能性を考慮
         const result = await response.json();
 
         if (result.result === 'success') {
@@ -365,24 +357,21 @@ async function submitData(event, type) {
             form.reset();
         } else if (result.result === 'error') {
             // ★ GASで捕捉した具体的なエラーメッセージを表示
-            alert(`送信エラーが発生しました (GASエラー: ${result.message})。システム管理者に連絡してください。`);
+            alert(`送信エラーが発生しました (GASエラー): ${result.message}`);
         } else {
             alert('データの送信に失敗しました。予期せぬ応答です。');
         }
     } catch (error) {
         console.error('通信エラー:', error);
-        // ★ ここで「致命的な通信エラー」が表示されます。
-        alert(`致命的な通信エラーが発生しました。インターネット接続、またはGASのデプロイ設定を確認してください。エラー詳細: ${error.message}`);
+        // ★ 致命的なエラーはここで捕捉されます
+        alert(`致命的な通信エラーが発生しました。システム管理者/デプロイ設定を確認してください。エラー詳細: ${error.message}`);
     }
 }
 
 
 // --- ページロード時の初期処理 ---
 document.addEventListener('DOMContentLoaded', () => {
-    // ログイン情報があれば自動ログインを試みる
     const loggedIn = checkLoginStatus();
-    
-    // ログイン情報がない場合のみ、名前リストを取得してログイン画面を表示
     if (!loggedIn) {
         fetchStaffNames();
     }
