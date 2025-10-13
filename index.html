@@ -35,7 +35,6 @@
             padding: 10px;
         }
         #main-app {
-            /* ★修正: 初期状態では完全に非表示にする */
             display: none;
             visibility: hidden; 
         }
@@ -182,12 +181,15 @@
         <h1>🐈 猫カフェ業務管理</h1>
         <div id="login-section">
             <label for="login-staff">担当者名</label>
-            <select id="login-staff"></select>
+            <select id="login-staff">
+                <option value="">従業員リストを読み込み中...</option> 
+            </select>
             <p id="login-message" style="color: #F08080;"></p>
             <button onclick="attemptLogin()">ログイン</button>
         </div>
 
-        <div id="main-app" style="visibility: hidden;"> <div id="auth-info" class="info-display">
+        <div id="main-app" style="visibility: hidden;">
+            <div id="auth-info" class="info-display">
                  <div id="current-staff-display"></div>
                  <button id="logout-btn" onclick="logout()">ログアウト</button>
             </div>
@@ -201,7 +203,8 @@
             <div id="stock-form" class="form-content">
                 <form id="stock-form-data" onsubmit="submitData(event, '在庫補充')">
                     <div id="stock-item-list">
-                        </div>
+                        <p>商品リストを読み込み中...</p>
+                    </div>
                     <label for="memo-stock">共通メモ (任意)</label>
                     <textarea id="memo-stock" rows="2"></textarea>
                     <button type="submit">在庫補充を送信</button>
@@ -211,7 +214,8 @@
             <div id="sale-form" class="form-content">
                 <form id="sale-form-data" onsubmit="submitData(event, '販売記録')">
                     <div id="sale-item-list">
-                        </div>
+                         <p>商品リストを読み込み中...</p>
+                    </div>
                     
                     <label for="memo-sale">メモ (任意)</label>
                     <textarea id="memo-sale" rows="2"></textarea>

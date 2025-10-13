@@ -23,6 +23,7 @@ function showMainApp(staffName) {
     mainApp.style.display = 'block';
     mainApp.style.visibility = 'visible';
     
+    // 初回は「在庫補充」タブを表示
     showTab('stock');
 }
 
@@ -52,8 +53,9 @@ async function fetchStaffNames() {
         });
     } catch (error) {
         console.error('従業員リスト取得エラー:', error);
+        // ★修正: エラーメッセージを具体的に
+        staffDropdown.innerHTML = '<option value="">エラー: 従業員リスト取得失敗</option>';
         alert(`従業員リストの取得に失敗しました。GASエラー: ${error.message}`);
-        staffDropdown.innerHTML = '<option value="">エラー: リロードしてください</option>';
     }
 }
 
@@ -62,6 +64,10 @@ async function fetchProductData() {
     const productUrl = `${GAS_WEB_APP_URL}?action=getProducts`;
     
     try {
+        // ★修正: ローディングメッセージを明確にする
+        document.getElementById('stock-item-list').innerHTML = '<p>商品リストを取得中...</p>';
+        document.getElementById('sale-item-list').innerHTML = '<p>商品リストを取得中...</p>';
+        
         const response = await fetch(productUrl);
         
         const fullProductList = await response.json(); 
@@ -79,6 +85,9 @@ async function fetchProductData() {
         renderItemLists();
     } catch (error) {
         console.error('商品情報取得エラー:', error);
+        // ★修正: エラーメッセージを具体的に
+        document.getElementById('stock-item-list').innerHTML = '<p style="color:red;">エラー: 商品リスト取得失敗。再ログインしてください。</p>';
+        document.getElementById('sale-item-list').innerHTML = '<p style="color:red;">エラー: 商品リスト取得失敗。再ログインしてください。</p>';
         alert(`商品情報の取得に失敗しました。GASエラー: ${error.message}`);
     }
 }
@@ -236,12 +245,13 @@ function checkLoginStatus() {
         // 担当者名だけ先に設定
         document.getElementById('current-staff-display').textContent = `${loggedInStaff}さんとしてログイン中`;
         
-        // ★修正ポイント: 商品情報取得（非同期）が完了するのを待ってから、メインアプリを表示する処理を呼ぶ
+        // ★修正ポイント: 商品情報取得（非同期）が完了するのを待ってから、メインアプリを表示する
         fetchProductData().then(() => {
             showMainApp(loggedInStaff);
         }).catch(error => {
-            // エラーが発生した場合も、少なくともログインセクションは非表示にする
-            document.getElementById('login-section').style.display = 'none';
+            // エラーが発生した場合、ログインセクションは非表示にせず、エラーメッセージを表示
+            document.getElementById('login-section').style.display = 'block';
+            document.getElementById('login-message').textContent = 'データ取得エラーのため、再ログインまたはリロードしてください。';
             console.error('データ取得エラーにより画面表示を完了できませんでした。', error);
         });
         
@@ -262,7 +272,8 @@ async function attemptLogin() {
         return;
     }
     
-    messageElement.textContent = '認証中...';
+    // ★修正: メッセージを具体的に
+    messageElement.textContent = '認証中... (商品リスト取得までお待ちください)';
 
     const authUrl = `${GAS_WEB_APP_URL}?staffName=${encodeURIComponent(staffName)}`;
 
@@ -274,6 +285,7 @@ async function attemptLogin() {
             localStorage.setItem('loggedInStaff', staffName);
             
             document.getElementById('login-section').style.display = 'none';
+            
             // ★修正ポイント: 非同期処理を待ってから showMainApp() を呼び出す
             await fetchProductData(); 
             showMainApp(staffName);
@@ -285,7 +297,7 @@ async function attemptLogin() {
         }
     } catch (error) {
         console.error('認証エラー:', error);
-        messageElement.textContent = '認証エラーが発生しました。';
+        messageElement.textContent = '致命的な認証エラーが発生しました。';
     }
 }
 
