@@ -12,8 +12,8 @@
             font-family: sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #FFE8F0;
-            color: #4F3F3F;
+            background-color: #FFE8F0; /* ベースの薄ピンク */
+            color: #4F3F3F; /* 全体フォント色を濃い茶色に */
         }
         
         #app-container {
@@ -26,7 +26,7 @@
         }
 
         h1 {
-            color: #F08080;
+            color: #F08080; /* 濃いピンク */
             text-align: center;
             border-bottom: 3px dashed #A59393;
             padding-bottom: 15px;
@@ -44,7 +44,7 @@
             display: block;
             margin-top: 15px;
             font-weight: bold;
-            color: #4F3F3F;
+            color: #4F3F3F; /* ラベル色を濃い茶色に */
         }
         input[type="text"], input[type="number"], select, textarea {
             width: 100%;
@@ -52,13 +52,13 @@
             margin-top: 5px;
             margin-bottom: 10px;
             box-sizing: border-box;
-            border: 1px solid #A59393;
+            border: 1px solid #A59393; /* ボーダーを濃い目の淡い茶色に */
             border-radius: 8px;
             background-color: #FFFFFF;
             color: #333;
         }
         button {
-            background-color: #F08080;
+            background-color: #F08080; /* 濃いピンク */
             color: white;
             padding: 12px 15px;
             border: none;
@@ -191,8 +191,7 @@
             <button onclick="attemptLogin()">ログイン</button>
         </div>
 
-        <div id="main-app" style="display: none;">
-            <div id="auth-info" class="info-display">
+        <div id="main-app" style="display: none;"> <div id="auth-info" class="info-display">
                  <div id="current-staff-display"></div>
                  <button id="logout-btn" onclick="logout()">ログアウト</button>
             </div>

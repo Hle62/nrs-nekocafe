@@ -14,7 +14,7 @@ function logout() {
 }
 // ----------------------------------
 
-// ★メインアプリを表示する処理を統合
+// ★新規関数: メインアプリを表示する処理を統合
 function showMainApp(staffName) {
     document.getElementById('current-staff-display').textContent = `${staffName}さんとしてログイン中`;
     
@@ -241,28 +241,27 @@ function updateSaleTotalDisplay() {
 
 
 // --- ページロード時の自動ログインチェック処理 ---
-async function checkLoginStatus() {
+function checkLoginStatus() {
     const loggedInStaff = localStorage.getItem('loggedInStaff');
     
     if (loggedInStaff) {
+        // ★修正ポイント: 自動ログイン時はログインセクションは非表示
         document.getElementById('login-section').style.display = 'none';
         
         // 担当者名だけ先に設定
         document.getElementById('current-staff-display').textContent = `${loggedInStaff}さんとしてログイン中`;
         
         // 商品情報取得（非同期）が完了するのを待ってから、メインアプリを表示する
-        try {
-             await fetchProductData();
-             showMainApp(loggedInStaff);
-             return true;
-        } catch (error) {
-            // エラー時はログイン画面に戻す
+        fetchProductData().then(() => {
+            showMainApp(loggedInStaff);
+        }).catch(error => {
             document.getElementById('login-section').style.display = 'block';
             document.getElementById('main-app').style.display = 'none';
             document.getElementById('login-message').textContent = 'データ取得エラーのため、リロードまたは再ログインしてください。';
             console.error('データ取得エラーにより画面表示を完了できませんでした。', error);
-            return false;
-        }
+        });
+        
+        return true;
     }
     return false;
 }
@@ -284,7 +283,7 @@ async function attemptLogin() {
     // 認証開始時にボタンを無効化し、メッセージを表示
     loginButton.textContent = '認証中...';
     loginButton.disabled = true;
-    messageElement.textContent = ''; 
+    messageElement.textContent = ''; // メッセージをクリア
     document.getElementById('login-message').style.display = 'block';
 
     const authUrl = `${GAS_WEB_APP_URL}?staffName=${encodeURIComponent(staffName)}`;
@@ -296,13 +295,14 @@ async function attemptLogin() {
         if (result.authenticated) {
             localStorage.setItem('loggedInStaff', staffName);
             
-            // Step 1: 認証成功直後、商品ロードが始まる前にメッセージを表示
-            document.getElementById('login-message').textContent = '認証完了、商品リストをロード中...'; 
+            // Step 1: 認証成功。商品ロードのメッセージに切り替える
+            loginButton.textContent = '認証成功！';
+            messageElement.textContent = '商品リストをロード中...'; 
             
-            // Step 2: 商品データ取得を待ってから showMainApp() を呼び出す
+            // 商品データ取得を待ってから showMainApp() を呼び出す
             await fetchProductData(); 
             
-            // Step 3: 全てのデータが揃った後、メイン画面を表示
+            // Step 2: 全てのデータが揃った後、メイン画面を表示
             showMainApp(staffName);
             
             // ログインメッセージをクリア
@@ -540,5 +540,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ログイン情報がない場合、名前リストを取得してログイン画面を表示
     if (!checkLoginStatus()) {
         fetchStaffNames();
+        
+        // ログイン情報がない場合は、アプリコンテナを即座に表示に戻す
+        document.getElementById('app-container').style.display = 'block';
     }
 });
