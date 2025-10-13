@@ -276,7 +276,6 @@ async function submitData(event, type) {
         
     } else if (type === '経費申請') {
         // 経費申請は単一送信のまま
-        // 経費申請フォームのバリデーションはHTMLのrequired属性に依存
         records.push({
             "item_type": "expense",
             "費目": form.querySelector('#category-expense').value,
@@ -345,7 +344,6 @@ async function submitData(event, type) {
             alert(`${type}のデータ ${records.length} 件が正常に送信され、Discordに通知されました！`);
             form.reset();
         } else if (result.result === 'error') {
-             // 致命的なエラーはここに来る可能性が高い
              alert(`送信エラーが発生しました (GASエラー: ${result.message})。システム管理者に連絡してください。`);
         } else {
             alert('データの送信に失敗しました。予期せぬ応答です。');
