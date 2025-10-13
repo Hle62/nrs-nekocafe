@@ -256,6 +256,7 @@ async function checkLoginStatus() {
              showMainApp(loggedInStaff);
              return true;
         } catch (error) {
+            // エラー時はログイン画面に戻す
             document.getElementById('login-section').style.display = 'block';
             document.getElementById('main-app').style.display = 'none';
             document.getElementById('login-message').textContent = 'データ取得エラーのため、リロードまたは再ログインしてください。';

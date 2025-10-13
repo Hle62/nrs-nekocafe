@@ -13,42 +13,9 @@
             margin: 0;
             padding: 20px;
             background-color: #FFE8F0; /* ベースの薄ピンク */
-            color: #4F3F3F; 
-            min-height: 100vh;
+            color: #4F3F3F; /* 全体フォント色を濃い茶色に */
         }
         
-        /* ★新規CSS: アプリ全体のローディング画面 */
-        #app-loader {
-            display: none; /* JSで表示を制御 */
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #FFE8F0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            z-index: 9999;
-        }
-        .loader-message {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #F08080; /* 濃いピンク */
-            border: 3px dashed #F08080;
-            padding: 20px 40px;
-            border-radius: 10px;
-            background-color: #FFFFFF;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.05); opacity: 0.9; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        
-        /* ★修正ポイント: アプリコンテナは初期状態で非表示 (JSで表示) */
         #app-container {
             max-width: 600px;
             margin: auto;
@@ -56,11 +23,10 @@
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 8px 15px rgba(240, 128, 128, 0.2);
-            display: none; /* JSで処理が完了したら表示に切り替える */
         }
 
         h1 {
-            color: #F08080;
+            color: #F08080; /* 濃いピンク */
             text-align: center;
             border-bottom: 3px dashed #A59393;
             padding-bottom: 15px;
@@ -71,13 +37,14 @@
             padding: 10px;
         }
         #main-app {
+            /* ログイン成功時にdisplay: blockが設定される */
             display: none; 
         }
         label {
             display: block;
             margin-top: 15px;
             font-weight: bold;
-            color: #4F3F3F;
+            color: #4F3F3F; /* ラベル色を濃い茶色に */
         }
         input[type="text"], input[type="number"], select, textarea {
             width: 100%;
@@ -85,13 +52,13 @@
             margin-top: 5px;
             margin-bottom: 10px;
             box-sizing: border-box;
-            border: 1px solid #A59393;
+            border: 1px solid #A59393; /* ボーダーを濃い目の淡い茶色に */
             border-radius: 8px;
             background-color: #FFFFFF;
             color: #333;
         }
         button {
-            background-color: #F08080;
+            background-color: #F08080; /* 濃いピンク */
             color: white;
             padding: 12px 15px;
             border: none;
@@ -209,14 +176,15 @@
             transform: scale(1.2); 
             margin-right: 8px;
         }
+        
+        /* ロードメッセージ関連は全て削除 */
+        #loading-message-container {
+            display: none; 
+        }
     </style>
 </head>
 <body>
     
-    <div id="app-loader">
-        <p class="loader-message">🐈 アプリ準備中...</p>
-    </div>
-
     <div id="app-container">
         <h1>🐈 猫カフェ業務管理</h1>
         <div id="login-section">
