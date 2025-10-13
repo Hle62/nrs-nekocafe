@@ -12,11 +12,11 @@
             font-family: sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #FFE8F0; /* ベースの薄ピンク */
-            color: #4F3F3F; /* 全体フォント色を濃い茶色に */
+            background-color: #FFE8F0;
+            color: #4F3F3F;
         }
         
-        /* ★修正ポイント1: アプリコンテナを初期状態で非表示にする */
+        /* ★修正ポイント: display: none を削除。初期状態で表示させる */
         #app-container {
             max-width: 600px;
             margin: auto;
@@ -24,12 +24,11 @@
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 8px 15px rgba(240, 128, 128, 0.2);
-            /* 初期非表示。JavaScriptで処理が完了したら表示に切り替える */
-            display: none; 
+            /* display: block; はデフォルトなので不要 */
         }
 
         h1 {
-            color: #F08080; /* 濃いピンク */
+            color: #F08080;
             text-align: center;
             border-bottom: 3px dashed #A59393;
             padding-bottom: 15px;
@@ -40,14 +39,15 @@
             padding: 10px;
         }
         #main-app {
-            /* main-app自体のvisibility: hiddenは、JS側で処理します */
+            /* main-appは初期状態では非表示。ログイン成功時に表示される */
             display: none; 
         }
+        /* ... (その他のスタイルは省略または微調整) ... */
         label {
             display: block;
             margin-top: 15px;
             font-weight: bold;
-            color: #4F3F3F; /* ラベル色を濃い茶色に */
+            color: #4F3F3F;
         }
         input[type="text"], input[type="number"], select, textarea {
             width: 100%;
@@ -55,13 +55,13 @@
             margin-top: 5px;
             margin-bottom: 10px;
             box-sizing: border-box;
-            border: 1px solid #A59393; /* ボーダーを濃い目の淡い茶色に */
+            border: 1px solid #A59393;
             border-radius: 8px;
             background-color: #FFFFFF;
             color: #333;
         }
         button {
-            background-color: #F08080; /* 濃いピンク */
+            background-color: #F08080;
             color: white;
             padding: 12px 15px;
             border: none;
@@ -180,25 +180,14 @@
             margin-right: 8px;
         }
         
-        /* ★新規CSS: 初期ロード中のメッセージコンテナを中央に配置 */
+        /* ★修正ポイント: ロードメッセージは削除し、コンテンツ自体に任せる */
         #loading-message-container {
-            max-width: 600px;
-            margin: auto;
-            text-align: center;
-            margin-top: 150px; /* 中央付近に配置 */
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #F08080;
-            display: none; /* 初期は非表示 */
+            display: none; 
         }
     </style>
 </head>
 <body>
     
-    <div id="loading-message-container">
-        <p>🐈 アプリケーション読み込み中...</p>
-    </div>
-
     <div id="app-container">
         <h1>🐈 猫カフェ業務管理</h1>
         <div id="login-section">
@@ -210,8 +199,7 @@
             <button onclick="attemptLogin()">ログイン</button>
         </div>
 
-        <div id="main-app" style="visibility: hidden;">
-            <div id="auth-info" class="info-display">
+        <div id="main-app"> <div id="auth-info" class="info-display">
                  <div id="current-staff-display"></div>
                  <button id="logout-btn" onclick="logout()">ログアウト</button>
             </div>

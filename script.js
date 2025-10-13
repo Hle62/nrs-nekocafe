@@ -18,28 +18,12 @@ function logout() {
 function showMainApp(staffName) {
     document.getElementById('current-staff-display').textContent = `${staffName}さんとしてログイン中`;
     
-    // アプリ全体を描画可能にする (visibility: hiddenを解除)
+    // 非表示を解除し、アプリ全体を描画
     const mainApp = document.getElementById('main-app');
-    mainApp.style.visibility = 'visible';
+    mainApp.style.display = 'block';
     
     // 初回は「在庫補充」タブを表示
     showTab('stock');
-}
-
-// ★新規関数: ローディング表示のトグル
-function toggleLoading(isVisible) {
-    const loadingContainer = document.getElementById('loading-message-container');
-    const appContainer = document.getElementById('app-container');
-    
-    if (isVisible) {
-        // 全体を隠し、ローディングメッセージを表示
-        appContainer.style.display = 'none';
-        loadingContainer.style.display = 'block';
-    } else {
-        // ローディングメッセージを隠し、アプリ全体を表示
-        loadingContainer.style.display = 'none';
-        appContainer.style.display = 'block';
-    }
 }
 
 
@@ -47,9 +31,6 @@ function toggleLoading(isVisible) {
 
 // 従業員名リストを取得し、プルダウンを構築
 async function fetchStaffNames() {
-    // ★修正: 従業員リスト取得中もローディングメッセージを表示
-    toggleLoading(true);
-    
     const staffUrl = `${GAS_WEB_APP_URL}?action=getStaffNames`;
     const staffDropdown = document.getElementById('login-staff');
     
@@ -60,9 +41,6 @@ async function fetchStaffNames() {
         if (staffNames.error) {
              throw new Error(staffNames.error);
         }
-        
-        // 取得完了後、ログイン画面を表示に戻す
-        toggleLoading(false);
 
         staffDropdown.innerHTML = '<option value="">-- 名前を選択してください --</option>';
 
@@ -76,7 +54,6 @@ async function fetchStaffNames() {
         console.error('従業員リスト取得エラー:', error);
         staffDropdown.innerHTML = '<option value="">エラー: 従業員リスト取得失敗</option>';
         alert(`従業員リストの取得に失敗しました。GASエラー: ${error.message}`);
-        toggleLoading(false); // エラー時もアプリ本体を表示
     }
 }
 
@@ -85,7 +62,7 @@ async function fetchProductData() {
     const productUrl = `${GAS_WEB_APP_URL}?action=getProducts`;
     
     try {
-        // Step 1: GASからのデータ取得中に表示 (fetchの前にメッセージ更新)
+        // GASからのデータ取得中にメッセージを表示 (これはローディング表示が解除された後、メインアプリ内で実行される)
         const loadingMessageFetch = '<p>商品リストデータをGASから取得中...</p>';
         document.getElementById('stock-item-list').innerHTML = loadingMessageFetch;
         document.getElementById('sale-item-list').innerHTML = loadingMessageFetch;
@@ -97,7 +74,7 @@ async function fetchProductData() {
              throw new Error(fullProductList.error);
         }
         
-        // Step 2: データ取得完了後、DOM構築中に表示 (ユーザーフィードバック)
+        // データ取得完了後、DOM構築中にメッセージを表示 (ユーザーフィードバック)
         const loadingMessageRender = '<p>リスト要素描画中...</p>';
         document.getElementById('stock-item-list').innerHTML = loadingMessageRender;
         document.getElementById('sale-item-list').innerHTML = loadingMessageRender;
@@ -116,7 +93,7 @@ async function fetchProductData() {
         document.getElementById('stock-item-list').innerHTML = '<p style="color:red;">エラー: 商品リスト取得失敗。再ログインしてください。</p>';
         document.getElementById('sale-item-list').innerHTML = '<p style="color:red;">エラー: 商品リスト取得失敗。再ログインしてください。</p>';
         alert(`商品情報の取得に失敗しました。GASエラー: ${error.message}`);
-        throw error; // ログイン処理側にエラーを投げる
+        throw error;
     }
 }
 
@@ -267,23 +244,34 @@ function updateSaleTotalDisplay() {
 function checkLoginStatus() {
     const loggedInStaff = localStorage.getItem('loggedInStaff');
     
+    // ★修正ポイント: ログインセクションが非表示の場合は、アプリ全体が見えていない状態と判断
+    const appContainer = document.getElementById('app-container');
+    
     if (loggedInStaff) {
         document.getElementById('login-section').style.display = 'none';
         
+        // アプリ全体を表示に戻す
+        appContainer.style.display = 'block';
+
         // 担当者名だけ先に設定
         document.getElementById('current-staff-display').textContent = `${loggedInStaff}さんとしてログイン中`;
         
-        // ★修正ポイント: メインアプリの表示を、fetchProductDataが完了するまで遅延させる
+        // 商品情報取得（非同期）が完了するのを待ってから、メインアプリを表示する
         fetchProductData().then(() => {
             showMainApp(loggedInStaff);
         }).catch(error => {
             document.getElementById('login-section').style.display = 'block';
+            document.getElementById('main-app').style.display = 'none';
             document.getElementById('login-message').textContent = 'データ取得エラーのため、リロードまたは再ログインしてください。';
             console.error('データ取得エラーにより画面表示を完了できませんでした。', error);
         });
         
         return true;
     }
+    
+    // ログイン情報がない場合は、アプリコンテナを表示に戻す（ログインフォームを表示させるため）
+    appContainer.style.display = 'block';
+    
     return false;
 }
 
@@ -299,7 +287,7 @@ async function attemptLogin() {
         return;
     }
     
-    // ★修正: 認証開始時のメッセージを表示
+    // 認証開始時のメッセージを表示
     messageElement.textContent = '認証中...';
 
     const authUrl = `${GAS_WEB_APP_URL}?staffName=${encodeURIComponent(staffName)}`;
@@ -366,7 +354,7 @@ async function submitData(event, type) {
     const submitButton = event.target.querySelector('button[type="submit"]');
     const originalButtonText = submitButton.textContent;
     
-    // ★修正: 送信ボタンのステータスを変更し、ユーザーに処理中であることを伝える
+    // 送信ボタンのステータスを変更し、ユーザーに処理中であることを伝える
     submitButton.textContent = '送信中...';
     submitButton.disabled = true;
 
@@ -550,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!checkLoginStatus()) {
         fetchStaffNames();
         
-        // ログイン情報がない場合は、アプリコンテナを表示に戻す
+        // ★修正ポイント: ログイン情報がない場合は、アプリコンテナを即座に表示に戻す
         document.getElementById('app-container').style.display = 'block';
     }
 });
