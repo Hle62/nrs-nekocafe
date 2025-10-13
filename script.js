@@ -45,7 +45,6 @@ async function fetchProductData() {
     try {
         const response = await fetch(productUrl);
         
-        // ★修正: GASから返される単価情報は不要になったが、商品名リストは使う
         const fullProductList = await response.json(); 
 
         // GASからエラーが返された場合
@@ -56,7 +55,7 @@ async function fetchProductData() {
         // 商品名と連番のみを保持
         productList = fullProductList.map((p, index) => ({
             name: p.name,
-            id: `item-${index}`
+            id: `item-${index}` // 連番ID
         }));
         
         renderItemLists();
@@ -72,7 +71,6 @@ function renderItemLists() {
     const saleListDiv = document.getElementById('sale-item-list');
 
     stockListDiv.innerHTML = '<label>在庫補充商品:</label><br>';
-    // ★修正: 販売リストに単価を表示しない
     saleListDiv.innerHTML = `<p style="font-style:italic; margin-bottom: 10px;">単価一律: ¥${SALE_UNIT_PRICE.toLocaleString()}</p><label>販売記録商品:</label><br>`;
 
     productList.forEach(product => {
@@ -105,7 +103,7 @@ function renderItemLists() {
                 
                 <div id="sale-qty-controls-${productId}" class="quantity-controls" style="margin-top: 5px; margin-left: 20px; display: none;">
                     <label for="qty-sale-${productId}" style="font-weight: normal; display: inline-block; width: 50px;">数量:</label>
-                    <input type="number" id="qty-sale-${productId}" min="0" value="0" oninput="updateSaleTotalDisplay()">
+                    <input type="number" id="qty-sale-${productId}" min="0" value="0" data-item-id="${productId}">
                     <button type="button" onclick="updateQuantity('qty-sale-${productId}', 1, 'sale')">+1</button>
                     <button type="button" onclick="updateQuantity('qty-sale-${productId}', 5, 'sale')">+5</button>
                     <button type="button" onclick="updateQuantity('qty-sale-${productId}', 10, 'sale')">+10</button>
@@ -116,15 +114,11 @@ function renderItemLists() {
         `;
         saleListDiv.insertAdjacentHTML('beforeend', saleHtml);
         
-        // ★修正: input要素にイベントリスナーを追加（数量変更時）
-        const qtyInput = document.getElementById(`qty-sale-${productId}`);
-        if(qtyInput) {
-            qtyInput.addEventListener('change', updateSaleTotalDisplay);
-            qtyInput.addEventListener('input', updateSaleTotalDisplay);
-        }
+        // ★修正：input要素にイベントリスナーを直接追加するロジックを修正
+        // DOM構築後、changeとinputイベントリスナーを設置する。
     });
-
-    // チェックボックスの状態変更時に数量コントロールを表示/非表示にするイベントリスナーを設定
+    
+    // ★修正：イベントリスナーを一括で設定
     document.querySelectorAll('input[type="checkbox"][name$="_item"]').forEach(checkbox => {
         checkbox.addEventListener('change', (e) => {
             const parts = e.target.id.split('-');
@@ -136,22 +130,30 @@ function renderItemLists() {
                 controls.style.display = e.target.checked ? 'block' : 'none';
                 
                 // チェックを外したら数量を0に戻す
-                if (!e.target.checked) {
-                    const input = document.getElementById(`qty-${idPrefix}-${productId}`);
-                    if (input) input.value = 0;
+                const input = document.getElementById(`qty-${idPrefix}-${productId}`);
+                if (!e.target.checked && input) {
+                    input.value = 0;
                 }
                 
-                // ★修正: チェックボックス変更時に合計金額を再計算
+                // チェックボックス変更時に合計金額を再計算
                 if (idPrefix === 'sale') {
                     updateSaleTotalDisplay();
                 }
             }
         });
     });
+
+    // ★修正：数量入力フィールドにchangeとinputイベントリスナーを設定（リアルタイム反映のため）
+    document.querySelectorAll('input[id^="qty-sale-"]').forEach(input => {
+        input.addEventListener('input', updateSaleTotalDisplay);
+        input.addEventListener('change', updateSaleTotalDisplay);
+    });
+
+    // 初期表示時に合計金額をリセット
+    updateSaleTotalDisplay();
 }
 
 // 数量ボタンの処理関数
-// ★修正: type引数を追加し、販売記録の場合は合計金額を更新
 function updateQuantity(inputId, value, type) {
     const input = document.getElementById(inputId);
     let currentValue = parseInt(input.value) || 0;
@@ -164,37 +166,47 @@ function updateQuantity(inputId, value, type) {
     
     input.value = newValue;
     
+    // イベントを手動で発火させ、リアルタイム計算をトリガー
     if (type === 'sale') {
-        updateSaleTotalDisplay();
+        // changeイベントを発火させることで、updateSaleTotalDisplay()が実行される
+        const event = new Event('change');
+        input.dispatchEvent(event); 
     }
 }
 
 // 個別リセット関数
-// ★修正: type引数を追加し、販売記録の場合は合計金額を更新
 function resetSingleQuantity(inputId, type) {
     const input = document.getElementById(inputId);
     if (input) {
         input.value = 0;
     }
     
+    // イベントを手動で発火させる
     if (type === 'sale') {
-        updateSaleTotalDisplay();
+        const event = new Event('change');
+        input.dispatchEvent(event);
     }
 }
 
-// ★新規追加: 販売記録の合計金額をリアルタイムで更新する関数
+// 販売記録の合計金額をリアルタイムで更新する関数
 function updateSaleTotalDisplay() {
     const totalDisplay = document.getElementById('sale-total-display');
-    const checkedItems = document.querySelectorAll('input[name="sale_item"]:checked');
+    // 全ての販売数量入力フィールドを取得
+    const saleQtyInputs = document.querySelectorAll('input[id^="qty-sale-"]');
     let totalSales = 0;
     
-    checkedItems.forEach(item => {
-        const parts = item.id.split('-');
-        const productId = parts.slice(1).join('-');
-        const quantityInput = document.getElementById(`qty-sale-${productId}`);
-        const quantity = parseInt(quantityInput.value) || 0;
+    saleQtyInputs.forEach(input => {
+        const quantity = parseInt(input.value) || 0;
         
-        totalSales += quantity * SALE_UNIT_PRICE;
+        // 関連するチェックボックスがチェックされているか確認
+        const parts = input.id.split('-');
+        const productId = parts.slice(2).join('-'); // 'item-0', 'item-1'を取得
+        const checkbox = document.getElementById(`sale-${productId}`);
+        
+        // チェックが入っていて、数量が正の場合のみ加算
+        if (checkbox && checkbox.checked && quantity > 0) {
+            totalSales += quantity * SALE_UNIT_PRICE;
+        }
     });
 
     totalDisplay.textContent = `合計金額: ¥${totalSales.toLocaleString()}`;
@@ -278,7 +290,6 @@ function showTab(tabId) {
     if (contentElement) {
         contentElement.style.display = 'block';
         
-        // ★修正: 販売記録タブに切り替わったときに合計金額をリセット
         if (tabId === 'sale') {
             updateSaleTotalDisplay();
         }
@@ -374,7 +385,8 @@ async function submitData(event, type) {
                 const productId = parts.slice(1).join('-');
                 const quantityInput = document.getElementById(`qty-sale-${productId}`);
                 const quantity = parseInt(quantityInput.value);
-                const unitPrice = SALE_UNIT_PRICE; // ★修正: 一律単価を使用
+                // ★修正：一律単価を使用
+                const unitPrice = SALE_UNIT_PRICE; 
                 
                 if (isNaN(quantity) || quantity < 1) {
                      alert(`${item.value} の数量を正しく入力してください（1以上）。`);
@@ -417,7 +429,7 @@ async function submitData(event, type) {
         if (result.result === 'success') {
             alert(`${type}のデータ ${records.length} 件が正常に送信され、Discordに通知されました！`);
             
-            // ★修正: 送信成功後の数量コントロールを閉じる処理
+            // 送信成功後の数量コントロールを閉じる処理
             if (type === '在庫補充' || type === '販売記録') {
                 const items = form.querySelectorAll('input[name$="_item"]:checked');
                 items.forEach(item => {
@@ -433,7 +445,7 @@ async function submitData(event, type) {
                     if (input) input.value = 0; 
                 });
                 
-                // ★修正: 販売記録送信後は合計金額表示もリセット
+                // 販売記録送信後は合計金額表示もリセット
                 if (type === '販売記録') {
                     updateSaleTotalDisplay();
                 }
