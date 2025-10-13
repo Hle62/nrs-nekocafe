@@ -14,7 +14,8 @@ async function fetchStaffNames() {
     
     try {
         const response = await fetch(staffUrl);
-        const staffNames = await response.json();
+        // レスポンスがJSONでない場合もfetchは成功するが、ここでエラーになる
+        const staffNames = await response.json(); 
         
         staffDropdown.innerHTML = '<option value="">-- 名前を選択してください --</option>';
 
@@ -25,6 +26,7 @@ async function fetchStaffNames() {
             staffDropdown.appendChild(option);
         });
     } catch (error) {
+        // GASのURL間違いやCORSエラーはここでキャッチされる
         console.error('従業員リスト取得エラー:', error);
         staffDropdown.innerHTML = '<option value="">エラー: リロードしてください</option>';
     }
@@ -175,16 +177,14 @@ async function submitData(event, type) {
         const response = await fetch(GAS_WEB_APP_URL, {
             method: 'POST',
             body: JSON.stringify(dataToSend),
-            headers: { 'Content-Type': 'application/json' }
+            // ★ CROS問題解決のため headers: { 'Content-Type': 'application/json' } は意図的に削除
         });
         const result = await response.json();
 
-        // GASがエラーガードを返した場合もここで処理できる
         if (result.result === 'success') {
             alert(`${type}のデータが正常に送信され、Discordに通知されました！`);
             form.reset();
         } else if (result.result === 'error') {
-             // GASのデバッグガードで捕捉されたエラー
              alert(`送信エラーが発生しました (GASエラー: ${result.message})。システム管理者に連絡してください。`);
         } else {
             alert('データの送信に失敗しました。予期せぬ応答です。');
