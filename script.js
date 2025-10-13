@@ -14,7 +14,6 @@ async function fetchStaffNames() {
     
     try {
         const response = await fetch(staffUrl);
-        // レスポンスがJSONでない場合もfetchは成功するが、ここでエラーになる
         const staffNames = await response.json(); 
         
         staffDropdown.innerHTML = '<option value="">-- 名前を選択してください --</option>';
@@ -26,7 +25,6 @@ async function fetchStaffNames() {
             staffDropdown.appendChild(option);
         });
     } catch (error) {
-        // GASのURL間違いやCORSエラーはここでキャッチされる
         console.error('従業員リスト取得エラー:', error);
         staffDropdown.innerHTML = '<option value="">エラー: リロードしてください</option>';
     }
@@ -98,19 +96,45 @@ async function attemptLogin() {
             localStorage.setItem('loggedInStaff', staffName);
             
             document.getElementById('login-section').style.display = 'none';
-            document.getElementById('auth-info').style.display = 'block';
-            document.querySelectorAll('.form-group').forEach(el => el.style.display = 'block');
+            document.getElementById('main-app').style.display = 'block'; // ★ メインアプリコンテナを表示
             document.getElementById('current-staff-display').textContent = `${staffName}さんとしてログイン中`; 
             messageElement.textContent = '';
             
             // フォーム表示時に商品データを取得し、フォームに反映
             await fetchProductData(); 
+            
+            // ★ 初回は「在庫補充」タブを表示
+            showTab('stock');
+
         } else {
             messageElement.textContent = 'エラー: その名前はシステムに登録されていません。';
         }
     } catch (error) {
         console.error('認証エラー:', error);
         messageElement.textContent = '認証エラーが発生しました。';
+    }
+}
+
+// --- 新しいタブ切り替え関数 ---
+function showTab(tabId) {
+    // 1. 全てのタブボタンから 'active' クラスを外し、現在のボタンに付与
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
+        // クリックされたボタンのtabIdと一致するかチェック
+        if (button.getAttribute('onclick').includes(`'${tabId}'`)) {
+            button.classList.add('active');
+        }
+    });
+
+    // 2. 全てのコンテンツを非表示にし、現在のコンテンツを表示
+    document.querySelectorAll('.form-content').forEach(content => {
+        content.style.display = 'none';
+    });
+
+    // tabId に対応するコンテンツを表示
+    const contentElement = document.getElementById(`${tabId}-form`);
+    if (contentElement) {
+        contentElement.style.display = 'block';
     }
 }
 
@@ -177,7 +201,7 @@ async function submitData(event, type) {
         const response = await fetch(GAS_WEB_APP_URL, {
             method: 'POST',
             body: JSON.stringify(dataToSend),
-            // ★ CROS問題解決のため headers: { 'Content-Type': 'application/json' } は意図的に削除
+            // CROS問題解決のため headers: { 'Content-Type': 'application/json' } は意図的に削除
         });
         const result = await response.json();
 
