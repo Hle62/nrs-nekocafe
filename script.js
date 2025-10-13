@@ -5,19 +5,15 @@ const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwRe84cPNCe-JxW
 // ★ 2. 【設定必須】販売記録に適用する一律の商品単価をここに設定してください
 const SALE_UNIT_PRICE = 300; // 例: 全ての商品を300円と仮定
 
-let productList = []; // 商品情報を格納
+let productList = [];
 
-// --- ログアウト関数 ---
 function logout() {
     localStorage.removeItem('loggedInStaff');
     window.location.reload();
 }
-// ----------------------------------
-
 
 // --- データの取得 ---
 
-// 従業員名リストを取得し、プルダウンを構築
 async function fetchStaffNames() {
     const staffUrl = `${GAS_WEB_APP_URL}?action=getStaffNames`;
     const staffDropdown = document.getElementById('login-staff');
@@ -26,7 +22,6 @@ async function fetchStaffNames() {
         const response = await fetch(staffUrl);
         const staffNames = await response.json(); 
         
-        // GASからエラーが返された場合
         if (staffNames.error) {
              throw new Error(staffNames.error);
         }
@@ -46,24 +41,20 @@ async function fetchStaffNames() {
     }
 }
 
-// 商品データを取得し、フォームのチェックボックスに反映
 async function fetchProductData() {
     const productUrl = `${GAS_WEB_APP_URL}?action=getProducts`;
     
     try {
         const response = await fetch(productUrl);
-        
         const fullProductList = await response.json(); 
 
-        // GASからエラーが返された場合
         if (fullProductList.error) {
              throw new Error(fullProductList.error);
         }
         
-        // 商品名と連番のみを保持
         productList = fullProductList.map((p, index) => ({
             name: p.name,
-            id: `item-${index}` // 連番ID
+            id: `item-${index}`
         }));
         
         renderItemLists();
@@ -73,7 +64,6 @@ async function fetchProductData() {
     }
 }
 
-// チェックボックスと数量フィールドを生成する関数
 function renderItemLists() {
     const stockListDiv = document.getElementById('stock-item-list');
     const saleListDiv = document.getElementById('sale-item-list');
@@ -123,7 +113,6 @@ function renderItemLists() {
         saleListDiv.insertAdjacentHTML('beforeend', saleHtml);
     });
     
-    // イベントリスナーを一括で設定
     document.querySelectorAll('input[type="checkbox"][name$="_item"]').forEach(checkbox => {
         checkbox.addEventListener('change', (e) => {
             const parts = e.target.id.split('-');
@@ -134,13 +123,11 @@ function renderItemLists() {
             if (controls) {
                 controls.style.display = e.target.checked ? 'block' : 'none';
                 
-                // チェックを外したら数量を0に戻す
                 const input = document.getElementById(`qty-${idPrefix}-${productId}`);
                 if (!e.target.checked && input) {
                     input.value = 0;
                 }
                 
-                // チェックボックス変更時に合計金額を再計算
                 if (idPrefix === 'sale') {
                     updateSaleTotalDisplay();
                 }
@@ -148,17 +135,14 @@ function renderItemLists() {
         });
     });
 
-    // 数量入力フィールドにchangeとinputイベントリスナーを設定（リアルタイム反映のため）
     document.querySelectorAll('input[id^="qty-sale-"]').forEach(input => {
         input.addEventListener('input', updateSaleTotalDisplay);
         input.addEventListener('change', updateSaleTotalDisplay);
     });
 
-    // 初期表示時に合計金額をリセット
     updateSaleTotalDisplay();
 }
 
-// 数量ボタンの処理関数
 function updateQuantity(inputId, value, type) {
     const input = document.getElementById(inputId);
     let currentValue = parseInt(input.value) || 0;
@@ -171,28 +155,24 @@ function updateQuantity(inputId, value, type) {
     
     input.value = newValue;
     
-    // イベントを手動で発火させ、リアルタイム計算をトリガー
     if (type === 'sale') {
         const event = new Event('change');
         input.dispatchEvent(event); 
     }
 }
 
-// 個別リセット関数
 function resetSingleQuantity(inputId, type) {
     const input = document.getElementById(inputId);
     if (input) {
         input.value = 0;
     }
     
-    // イベントを手動で発火させる
     if (type === 'sale') {
         const event = new Event('change');
         input.dispatchEvent(event);
     }
 }
 
-// 販売記録の合計金額をリアルタイムで更新する関数
 function updateSaleTotalDisplay() {
     const totalDisplay = document.getElementById('sale-total-display');
     const saleQtyInputs = document.querySelectorAll('input[id^="qty-sale-"]');
@@ -201,12 +181,10 @@ function updateSaleTotalDisplay() {
     saleQtyInputs.forEach(input => {
         const quantity = parseInt(input.value) || 0;
         
-        // 関連するチェックボックスがチェックされているか確認
         const parts = input.id.split('-');
         const productId = parts.slice(2).join('-'); 
         const checkbox = document.getElementById(`sale-${productId}`);
         
-        // チェックが入っていて、数量が正の場合のみ加算
         if (checkbox && checkbox.checked && quantity > 0) {
             totalSales += quantity * SALE_UNIT_PRICE;
         }
@@ -236,7 +214,6 @@ function checkLoginStatus() {
 
 // --- ログイン処理 ---
 
-// ログイン試行（プルダウン選択のみ）
 async function attemptLogin() {
     const staffName = document.getElementById('login-staff').value;
     const messageElement = document.getElementById('login-message');
@@ -344,7 +321,6 @@ async function submitData(event, type) {
                 });
             });
 
-            // 商品が未選択でメモのみの場合
             if (records.length === 0 && memo.trim() !== '') {
                  records.push({
                      "item_type": "stock_memo",
@@ -361,7 +337,6 @@ async function submitData(event, type) {
         
     } else if (type === '経費申請') {
         const memo = form.querySelector('#memo-expense').value;
-        // メモの必須チェックは削除済み
 
         records.push({
             "item_type": "expense",
@@ -428,7 +403,6 @@ async function submitData(event, type) {
         if (result.result === 'success') {
             alert(`${type}のデータ ${records.length} 件が正常に送信され、Discordに通知されました！`);
             
-            // 送信成功後の数量コントロールを閉じる処理
             if (type === '在庫補充' || type === '販売記録') {
                 const items = form.querySelectorAll('input[name$="_item"]:checked');
                 items.forEach(item => {
@@ -444,7 +418,6 @@ async function submitData(event, type) {
                     if (input) input.value = 0; 
                 });
                 
-                // 販売記録送信後は合計金額表示もリセット
                 if (type === '販売記録') {
                     updateSaleTotalDisplay();
                 }
