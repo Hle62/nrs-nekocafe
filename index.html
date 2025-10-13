@@ -6,27 +6,27 @@
     <title>猫カフェ管理アプリ</title>
     <style>
         /* ベースカラー: 薄いピンク (#FFE8F0) と白 (#FFFFFF) */
-        /* アクセントカラー: 淡い茶色 (#A59393) と濃いピンク (#F08080) */
+        /* アクセントカラー: 濃いピンク (#F08080) と濃い茶色 (#4F3F3F) */
         
         body {
             font-family: sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #FFE8F0; /* 薄いピンクを背景に */
-            color: #333;
+            background-color: #FFE8F0; /* ベースの薄ピンク */
+            color: #4F3F3F; /* ★修正: 全体フォント色を濃い茶色に */
         }
         #app-container {
             max-width: 600px;
             margin: auto;
-            background: #FFFFFF; /* アプリ本体は白 */
+            background: #FFFFFF;
             padding: 30px;
-            border-radius: 15px; /* 角を丸く */
-            box-shadow: 0 8px 15px rgba(240, 128, 128, 0.2); /* 濃いピンク系の影 */
+            border-radius: 15px;
+            box-shadow: 0 8px 15px rgba(240, 128, 128, 0.2);
         }
         h1 {
             color: #F08080; /* 濃いピンク */
             text-align: center;
-            border-bottom: 3px dashed #A59393; /* 淡い茶色で点線 */
+            border-bottom: 3px dashed #A59393;
             padding-bottom: 15px;
             margin-bottom: 25px;
             font-size: 1.8em;
@@ -41,7 +41,7 @@
             display: block;
             margin-top: 15px;
             font-weight: bold;
-            color: #A59393; /* 淡い茶色 */
+            color: #4F3F3F; /* ★修正: ラベル色を濃い茶色に */
         }
         input[type="text"], input[type="number"], select, textarea {
             width: 100%;
@@ -49,9 +49,10 @@
             margin-top: 5px;
             margin-bottom: 10px;
             box-sizing: border-box;
-            border: 1px solid #F08080; /* 濃いピンクの細い枠線 */
-            border-radius: 8px; /* 角を丸く */
-            background-color: #FFF9FC; /* わずかにピンクがかった背景 */
+            border: 1px solid #A59393; /* ★修正: ボーダーを濃い目の淡い茶色に */
+            border-radius: 8px;
+            background-color: #FFFFFF; /* ★修正: 背景を白に固定してコントラスト確保 */
+            color: #333; /* 入力文字色 */
         }
         button {
             background-color: #F08080; /* 濃いピンク */
@@ -63,10 +64,11 @@
             margin-top: 15px;
             width: 100%;
             font-size: 1em;
+            font-weight: bold; /* ★修正: 太字にして強調 */
             transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #DC6D6D; /* 濃いピンクを少し暗く */
+            background-color: #DC6D6D;
         }
         /* --- タブデザイン --- */
         .tab-bar {
@@ -78,19 +80,19 @@
             flex-grow: 1;
             padding: 10px;
             border: none;
-            background-color: #FFF9FC; /* 薄いピンク */
+            background-color: #FFF9FC; 
             cursor: pointer;
             border-radius: 8px 8px 0 0;
             font-weight: bold;
-            color: #A59393;
+            color: #4F3F3F; /* ★修正: タブ文字色を濃い茶色に */
             transition: all 0.3s;
             margin-right: 4px;
             border: 1px solid #FFE8F0;
         }
         .tab-button.active {
             background-color: #FFFFFF;
-            border-bottom: 3px solid #F08080; /* 濃いピンクの下線 */
-            color: #F08080;
+            border-bottom: 3px solid #F08080;
+            color: #F08080; /* アクティブタブは濃いピンク */
             z-index: 1;
         }
         .form-content {
@@ -102,6 +104,9 @@
             width: 70px;
             display: inline-block;
             margin-right: 5px;
+        }
+        .quantity-controls label {
+            color: #4F3F3F; /* 数量ラベルも濃く */
         }
         .quantity-controls button {
             width: auto;
@@ -116,18 +121,15 @@
         .quantity-controls .reset-btn {
             background-color: #F08080; /* 濃いピンク */
         }
-        .quantity-controls .reset-btn:hover {
-            background-color: #DC6D6D;
-        }
         /* --- 認証情報エリア --- */
         #auth-info {
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             font-size: 0.9em;
-            color: #A59393;
+            color: #4F3F3F; /* ★修正: 認証情報文字色を濃い茶色に */
             margin-bottom: 15px;
-            border-bottom: 1px dashed #FFE8F0; 
+            border-bottom: 1px dashed #A59393; 
             padding-bottom: 8px;
         }
         #current-staff-display {
@@ -135,14 +137,11 @@
              color: #F08080; /* 濃いピンク */
         }
         #logout-btn {
-             background-color: #A59393; /* ログアウトは淡い茶色 */
+             background-color: #A59393;
              padding: 5px 10px;
              font-size: 0.8em;
              width: auto;
              margin: 0;
-        }
-        #logout-btn:hover {
-             background-color: #8C7C7C;
         }
 
         /* --- 合計金額表示 --- */
@@ -152,20 +151,19 @@
             color: #F08080;
             margin: 20px 0 10px 0;
             padding: 10px;
-            border: 2px dashed #FFE8F0;
+            border: 2px solid #F08080; /* ★修正: ボーダーを濃いピンクの点線に */
             border-radius: 8px;
             text-align: center;
             background-color: #FFF9FC;
         }
         .item-box {
-            border: 1px solid #FFE8F0; /* アイテムの枠を薄いピンクに */
+            border: 1px solid #FFE8F0; 
             padding: 10px; 
             margin-bottom: 10px; 
             border-radius: 8px;
             background-color: #FFF9FC;
         }
         .item-box input[type="checkbox"] {
-            /* チェックボックスのスタイルを標準より少し大きく */
             transform: scale(1.2); 
             margin-right: 8px;
         }
@@ -220,7 +218,7 @@
             <div id="expense-form" class="form-content">
                 <form id="expense-form-data" onsubmit="submitData(event, '経費申請')">
                     <label>費目</label>
-                    <input type="text" id="category-expense" value="材料費" readonly style="background-color: #F8F8F8; border: 1px solid #ccc;">
+                    <input type="text" id="category-expense" value="材料費" readonly style="background-color: #F8F8F8; border: 1px solid #ccc; color: #4F3F3F;">
 
                     <label for="amount-expense">金額</label>
                     <input type="number" id="amount-expense" required min="1" inputmode="numeric">
