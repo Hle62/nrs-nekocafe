@@ -115,17 +115,17 @@
             border-bottom: 1px dashed #ccc;
             padding-bottom: 5px;
         }
-        /* ★ リアルタイム合計金額のスタイル */
+        /* ★ 修正: 合計金額表示のスタイルを小さく調整 */
         #sale-total-display {
-            font-size: 1.5em;
+            font-size: 1.2em; /* サイズ縮小 */
             font-weight: bold;
-            color: #d9534f; /* 赤系で目立たせる */
-            margin: 15px 0;
-            padding: 10px;
-            border: 2px solid #d9534f;
+            color: #333; /* 目立ちすぎない色 */
+            margin: 10px 0;
+            padding: 8px; /* パディング縮小 */
+            border: 1px solid #ccc; /* 枠線をシンプルに */
             border-radius: 4px;
             text-align: center;
-            background-color: #fffafa;
+            background-color: #f9f9f9;
         }
     </style>
 </head>
@@ -160,13 +160,14 @@
 
             <div id="sale-form" class="form-content">
                 <form id="sale-form-data" onsubmit="submitData(event, '販売記録')">
-                    <div id="sale-total-display">合計金額: ¥0</div> 
-
                     <div id="sale-item-list">
                         </div>
                     
                     <label for="memo-sale">メモ (任意):</label>
                     <textarea id="memo-sale" rows="2"></textarea>
+                    
+                    <div id="sale-total-display">合計金額: ¥0</div> 
+
                     <button type="submit">販売記録を送信</button>
                 </form>
             </div>

@@ -1,6 +1,6 @@
 // ==========================================================
 // ★ 1. 【設定必須】GASのウェブアプリURLをここに貼り付けてください
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwRe84cPNCe-JxWTWz__JKNmsvGZCdfuVBaF-VpNC0wxdbcQaOygbimt0nCbZGI7YJP/exec'; 
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwRe84cPNCe-JxWTWz__JKNmsvGZCdfuVBaF-VpNC0wxdbcQaOygbimt0nCbG7YJP/exec'; 
 // ==========================================================
 // ★ 2. 【設定必須】販売記録に適用する一律の商品単価をここに設定してください
 const SALE_UNIT_PRICE = 300; // 例: 全ての商品を300円と仮定
@@ -71,7 +71,8 @@ function renderItemLists() {
     const saleListDiv = document.getElementById('sale-item-list');
 
     stockListDiv.innerHTML = '<label>在庫補充商品:</label><br>';
-    saleListDiv.innerHTML = `<p style="font-style:italic; margin-bottom: 10px;">単価一律: ¥${SALE_UNIT_PRICE.toLocaleString()}</p><label>販売記録商品:</label><br>`;
+    // ★修正: 単価一律の表示を削除
+    saleListDiv.innerHTML = '<label>販売記録商品:</label><br>'; 
 
     productList.forEach(product => {
         const productId = product.id; 
@@ -113,12 +114,9 @@ function renderItemLists() {
             </div>
         `;
         saleListDiv.insertAdjacentHTML('beforeend', saleHtml);
-        
-        // ★修正：input要素にイベントリスナーを直接追加するロジックを修正
-        // DOM構築後、changeとinputイベントリスナーを設置する。
     });
     
-    // ★修正：イベントリスナーを一括で設定
+    // イベントリスナーを一括で設定
     document.querySelectorAll('input[type="checkbox"][name$="_item"]').forEach(checkbox => {
         checkbox.addEventListener('change', (e) => {
             const parts = e.target.id.split('-');
@@ -143,7 +141,7 @@ function renderItemLists() {
         });
     });
 
-    // ★修正：数量入力フィールドにchangeとinputイベントリスナーを設定（リアルタイム反映のため）
+    // 数量入力フィールドにchangeとinputイベントリスナーを設定（リアルタイム反映のため）
     document.querySelectorAll('input[id^="qty-sale-"]').forEach(input => {
         input.addEventListener('input', updateSaleTotalDisplay);
         input.addEventListener('change', updateSaleTotalDisplay);
@@ -168,7 +166,6 @@ function updateQuantity(inputId, value, type) {
     
     // イベントを手動で発火させ、リアルタイム計算をトリガー
     if (type === 'sale') {
-        // changeイベントを発火させることで、updateSaleTotalDisplay()が実行される
         const event = new Event('change');
         input.dispatchEvent(event); 
     }
@@ -191,7 +188,6 @@ function resetSingleQuantity(inputId, type) {
 // 販売記録の合計金額をリアルタイムで更新する関数
 function updateSaleTotalDisplay() {
     const totalDisplay = document.getElementById('sale-total-display');
-    // 全ての販売数量入力フィールドを取得
     const saleQtyInputs = document.querySelectorAll('input[id^="qty-sale-"]');
     let totalSales = 0;
     
@@ -385,7 +381,6 @@ async function submitData(event, type) {
                 const productId = parts.slice(1).join('-');
                 const quantityInput = document.getElementById(`qty-sale-${productId}`);
                 const quantity = parseInt(quantityInput.value);
-                // ★修正：一律単価を使用
                 const unitPrice = SALE_UNIT_PRICE; 
                 
                 if (isNaN(quantity) || quantity < 1) {
