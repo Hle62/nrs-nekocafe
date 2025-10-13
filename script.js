@@ -69,6 +69,25 @@ function updateProductDropdowns() {
     });
 }
 
+// --- ページロード時の自動ログインチェック処理（NEW!）---
+function checkLoginStatus() {
+    const loggedInStaff = localStorage.getItem('loggedInStaff');
+    
+    if (loggedInStaff) {
+        // ログイン情報がLocalStorageに残っている場合、自動でメイン画面を表示
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('main-app').style.display = 'block';
+        document.getElementById('current-staff-display').textContent = `${loggedInStaff}さんとしてログイン中`;
+        
+        // 商品情報を取得し、フォームを準備
+        fetchProductData();
+        showTab('stock');
+        
+        return true; // 自動ログイン成功
+    }
+    return false; // ログイン情報なし
+}
+
 
 // --- ログイン処理 ---
 
@@ -93,17 +112,17 @@ async function attemptLogin() {
 
         if (result.authenticated) {
             // ログイン成功
-            localStorage.setItem('loggedInStaff', staffName);
+            localStorage.setItem('loggedInStaff', staffName); // ★ ここで情報を保存
             
             document.getElementById('login-section').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block'; // ★ メインアプリコンテナを表示
+            document.getElementById('main-app').style.display = 'block'; 
             document.getElementById('current-staff-display').textContent = `${staffName}さんとしてログイン中`; 
             messageElement.textContent = '';
             
             // フォーム表示時に商品データを取得し、フォームに反映
             await fetchProductData(); 
             
-            // ★ 初回は「在庫補充」タブを表示
+            // 初回は「在庫補充」タブを表示
             showTab('stock');
 
         } else {
@@ -115,12 +134,11 @@ async function attemptLogin() {
     }
 }
 
-// --- 新しいタブ切り替え関数 ---
+// --- タブ切り替え関数 ---
 function showTab(tabId) {
     // 1. 全てのタブボタンから 'active' クラスを外し、現在のボタンに付与
     document.querySelectorAll('.tab-button').forEach(button => {
         button.classList.remove('active');
-        // クリックされたボタンのtabIdと一致するかチェック
         if (button.getAttribute('onclick').includes(`'${tabId}'`)) {
             button.classList.add('active');
         }
@@ -139,7 +157,7 @@ function showTab(tabId) {
 }
 
 
-// --- データ送信処理 ---
+// --- データ送信処理 (省略) ---
 
 // データ送信（フォームごとに処理を分岐）
 async function submitData(event, type) {
@@ -201,7 +219,6 @@ async function submitData(event, type) {
         const response = await fetch(GAS_WEB_APP_URL, {
             method: 'POST',
             body: JSON.stringify(dataToSend),
-            // CROS問題解決のため headers: { 'Content-Type': 'application/json' } は意図的に削除
         });
         const result = await response.json();
 
@@ -219,5 +236,14 @@ async function submitData(event, type) {
     }
 }
 
-// --- ページロード時にスタッフ名リストの取得を実行 ---
-document.addEventListener('DOMContentLoaded', fetchStaffNames);
+
+// --- ページロード時の初期処理 ---
+document.addEventListener('DOMContentLoaded', () => {
+    // ログイン情報があれば自動ログインを試みる
+    const loggedIn = checkLoginStatus();
+    
+    // ログイン情報がない場合のみ、名前リストを取得してログイン画面を表示
+    if (!loggedIn) {
+        fetchStaffNames();
+    }
+});
