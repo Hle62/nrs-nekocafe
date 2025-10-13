@@ -7,6 +7,7 @@
     <style>
         body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 15px; }
         .input-section { border: 1px solid #ccc; padding: 15px; margin-top: 20px; border-radius: 8px; }
+        .form-group { display: none; } /* 初期状態は非表示 */
         label { display: block; margin-top: 10px; font-weight: bold; }
         input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
         button { padding: 10px 15px; margin-top: 15px; background-color: #333; color: white; border: none; border-radius: 5px; cursor: pointer; }
@@ -39,7 +40,7 @@
 
     <hr>
 
-    <div class="input-section form-group" style="display: none;">
+    <div class="input-section form-group">
         <h2>📦 在庫補充記録</h2>
         <form onsubmit="submitData(event, '在庫補充')">
             <label for="item-stock">商品名:</label>
@@ -59,7 +60,7 @@
 
     <hr>
 
-    <div class="input-section form-group" style="display: none;">
+    <div class="input-section form-group">
         <h2>💰 経費申請記録</h2>
         <form onsubmit="submitData(event, '経費申請')">
             <label for="category-expense">費目:</label>
@@ -81,7 +82,7 @@
 
     <hr>
 
-    <div class="input-section form-group" style="display: none;">
+    <div class="input-section form-group">
         <h2>🎉 販売記録</h2>
         <form onsubmit="submitData(event, '販売記録')">
             <label for="item-sale">商品名:</label>

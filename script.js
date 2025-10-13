@@ -1,6 +1,6 @@
 // ==========================================================
-// ★ 1. 【設定必須】ここにウェブアプリURLをここに貼り付けてください
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwRe84cPNCe-JxWTWz__JKNmsvGZCdfuVBaF-VpNC0wxdbcQaOygbimt0nCbZGI7YJP/exec'; 
+// ★ 1. 【設定必須】GASのウェブアプリURLをここに貼り付けてください
+const GAS_WEB_APP_URL = '【ここにGASのウェブアプリURLを貼り付け】'; 
 // ==========================================================
 
 let productList = []; // 商品情報を格納
@@ -64,7 +64,7 @@ function updateProductDropdowns() {
 
         const option2 = document.createElement('option');
         option2.value = product.name;
-        option2.textContent = `${product.name} (¥${product.price.toLocaleString()})`; // 単価を表示
+        option2.textContent = `${product.name} (¥${product.price.toLocaleString()})`;
         document.getElementById('item-sale').appendChild(option2);
     });
 }
@@ -129,7 +129,6 @@ async function submitData(event, type) {
     let dataToSend;
     const form = event.target;
     
-    // フォームタイプに応じてデータオブジェクトを構築
     if (type === '在庫補充') {
         dataToSend = {
             "type": type,
@@ -150,7 +149,6 @@ async function submitData(event, type) {
         const selectedItem = form.querySelector('#item-sale').value;
         const quantity = form.querySelector('#quantity-sale').value;
         
-        // 商品単価をリストから検索して売上金額を計算
         const product = productList.find(p => p.name === selectedItem);
         const unitPrice = product ? product.price : 0;
         const totalAmount = unitPrice * parseInt(quantity || 0);
@@ -181,14 +179,18 @@ async function submitData(event, type) {
         });
         const result = await response.json();
 
+        // GASがエラーガードを返した場合もここで処理できる
         if (result.result === 'success') {
             alert(`${type}のデータが正常に送信され、Discordに通知されました！`);
             form.reset();
+        } else if (result.result === 'error') {
+             // GASのデバッグガードで捕捉されたエラー
+             alert(`送信エラーが発生しました (GASエラー: ${result.message})。システム管理者に連絡してください。`);
         } else {
-            alert('データの送信に失敗しました。');
+            alert('データの送信に失敗しました。予期せぬ応答です。');
         }
     } catch (error) {
-        console.error('送信エラー:', error);
+        console.error('通信エラー:', error);
         alert('エラーが発生しました。システム管理者に連絡してください。');
     }
 }
