@@ -12,11 +12,10 @@
             font-family: sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #FFE8F0;
-            color: #4F3F3F;
+            background-color: #FFE8F0; /* ベースの薄ピンク */
+            color: #4F3F3F; /* 全体フォント色を濃い茶色に */
         }
         
-        /* ★修正ポイント: display: none を削除。初期状態で表示させる */
         #app-container {
             max-width: 600px;
             margin: auto;
@@ -24,11 +23,10 @@
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 8px 15px rgba(240, 128, 128, 0.2);
-            /* display: block; はデフォルトなので不要 */
         }
 
         h1 {
-            color: #F08080;
+            color: #F08080; /* 濃いピンク */
             text-align: center;
             border-bottom: 3px dashed #A59393;
             padding-bottom: 15px;
@@ -39,15 +37,14 @@
             padding: 10px;
         }
         #main-app {
-            /* main-appは初期状態では非表示。ログイン成功時に表示される */
+            /* ログイン成功時にdisplay: blockが設定される */
             display: none; 
         }
-        /* ... (その他のスタイルは省略または微調整) ... */
         label {
             display: block;
             margin-top: 15px;
             font-weight: bold;
-            color: #4F3F3F;
+            color: #4F3F3F; /* ラベル色を濃い茶色に */
         }
         input[type="text"], input[type="number"], select, textarea {
             width: 100%;
@@ -55,13 +52,13 @@
             margin-top: 5px;
             margin-bottom: 10px;
             box-sizing: border-box;
-            border: 1px solid #A59393;
+            border: 1px solid #A59393; /* ボーダーを濃い目の淡い茶色に */
             border-radius: 8px;
             background-color: #FFFFFF;
             color: #333;
         }
         button {
-            background-color: #F08080;
+            background-color: #F08080; /* 濃いピンク */
             color: white;
             padding: 12px 15px;
             border: none;
@@ -179,11 +176,6 @@
             transform: scale(1.2); 
             margin-right: 8px;
         }
-        
-        /* ★修正ポイント: ロードメッセージは削除し、コンテンツ自体に任せる */
-        #loading-message-container {
-            display: none; 
-        }
     </style>
 </head>
 <body>
@@ -195,11 +187,11 @@
             <select id="login-staff">
                 <option value="">従業員リストを読み込み中...</option> 
             </select>
-            <p id="login-message" style="color: #F08080;"></p>
+            <p id="login-message" style="color: #F08080;"></p> 
             <button onclick="attemptLogin()">ログイン</button>
         </div>
 
-        <div id="main-app"> <div id="auth-info" class="info-display">
+        <div id="main-app" style="display: none;"> <div id="auth-info" class="info-display">
                  <div id="current-staff-display"></div>
                  <button id="logout-btn" onclick="logout()">ログアウト</button>
             </div>
