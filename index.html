@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐈 猫カフェ管理サイト</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 15px; }
+        .input-section { border: 1px solid #ccc; padding: 15px; margin-top: 20px; border-radius: 8px; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
+        button { padding: 10px 15px; margin-top: 15px; background-color: #333; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background-color: #555; }
+        #login-section button { background-color: #007bff; }
+        #login-section button:hover { background-color: #0056b3; }
+        #current-staff-display { font-weight: bold; color: green; margin-bottom: 10px; }
+        hr { margin: 30px 0; border: 0; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+    <h1>🐈 猫カフェ管理サイト</h1>
+
+    <div id="login-section" class="input-section">
+        <h2>ログイン</h2>
+        
+        <label for="login-staff">担当者名を選択:</label>
+        <select id="login-staff" required>
+            <option value="">-- 読み込み中 --</option>
+        </select>
+        
+        <button onclick="attemptLogin()">ログイン</button>
+        <p id="login-message" style="color: red;"></p>
+    </div>
+
+    <div class="input-section" id="auth-info" style="display: none;">
+        <p id="current-staff-display"></p>
+        <button onclick="localStorage.removeItem('loggedInStaff'); window.location.reload();">ログアウト</button>
+    </div>
+
+    <hr>
+
+    <div class="input-section form-group" style="display: none;">
+        <h2>📦 在庫補充記録</h2>
+        <form onsubmit="submitData(event, '在庫補充')">
+            <label for="item-stock">商品名:</label>
+            <select id="item-stock" required>
+                <option value="">-- 読み込み中 --</option>
+            </select><br>
+
+            <label for="quantity-stock">補充数量:</label>
+            <input type="number" id="quantity-stock" min="1" required><br>
+
+            <label for="memo-stock">メモ:</label>
+            <textarea id="memo-stock"></textarea><br>
+
+            <button type="submit">在庫補充を記録</button>
+        </form>
+    </div>
+
+    <hr>
+
+    <div class="input-section form-group" style="display: none;">
+        <h2>💰 経費申請記録</h2>
+        <form onsubmit="submitData(event, '経費申請')">
+            <label for="category-expense">費目:</label>
+            <select id="category-expense" required>
+                <option value="材料費">材料費</option>
+                <option value="雑費">雑費</option>
+                <option value="備品購入費">備品購入費</option>
+            </select><br>
+
+            <label for="amount-expense">金額 (円):</label>
+            <input type="number" id="amount-expense" min="1" required><br>
+
+            <label for="memo-expense">メモ:</label>
+            <textarea id="memo-expense"></textarea><br>
+
+            <button type="submit">経費を申請</button>
+        </form>
+    </div>
+
+    <hr>
+
+    <div class="input-section form-group" style="display: none;">
+        <h2>🎉 販売記録</h2>
+        <form onsubmit="submitData(event, '販売記録')">
+            <label for="item-sale">商品名:</label>
+            <select id="item-sale" required>
+                <option value="">-- 読み込み中 --</option>
+            </select><br>
+
+            <label for="quantity-sale">販売数量:</label>
+            <input type="number" id="quantity-sale" min="1" required><br>
+
+            <p style="margin-top: 10px; font-style: italic;">※ 売上金額は自動計算されます。</p>
+            
+            <button type="submit">販売を記録</button>
+        </form>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
