@@ -65,10 +65,12 @@ function renderItemLists() {
     saleListDiv.innerHTML = '<label>販売記録商品:</label><br>';
 
     productList.forEach(product => {
-        // ★★★ 修正箇所: 商品名からIDとして安全な文字列を生成 ★★★
-        // すべてのスペース、全角文字、特殊文字を削除または安全な文字に置換してIDを作成
-        const safeProductName = String(product.name).replace(/\s+/g, '').replace(/[^a-zA-Z0-9_-]/g, '');
-        const productId = safeProductName; 
+        // ★★★ 修正箇所（1/2）：IDを生成する際に、商品名ではなくインデックスを使用し、安全性を確保 ★★★
+        // 商品名に依存しない、ループインデックス（0から始まる連番）と商品名を組み合わせて一意なIDを作成
+        const index = productList.indexOf(product);
+        const productId = `item-${index}`; 
+        
+        // 元の商品名から特殊文字を削除したものをIDに使うとハイフンでIDが重複する可能性があったため、連番を使うのが最も安全。
         // ★★★ 修正箇所: ここまで ★★★
 
 
@@ -114,11 +116,13 @@ function renderItemLists() {
     // チェックボックスの状態変更時に数量コントロールを表示/非表示にするイベントリスナーを設定
     document.querySelectorAll('input[type="checkbox"][name$="_item"]').forEach(checkbox => {
         checkbox.addEventListener('change', (e) => {
-            // IDの取得方法も調整
+            // ★★★ 修正箇所（2/2）：IDの分割方法を変更し、正確なproductIdを取得 ★★★
+            // e.target.id は "stock-item-0" や "sale-item-1" の形式になっている
             const parts = e.target.id.split('-');
-            const idPrefix = parts[0]; // stock または sale
-            const productId = parts.slice(1).join('-'); // 商品名から作った安全なID
-
+            const idPrefix = parts[0]; // 'stock' or 'sale'
+            // ID生成時に 'item-X' の形式にしたため、後半部分全体を取得する
+            const productId = parts.slice(1).join('-'); // 'item-0', 'item-1', ...
+            
             const controls = document.getElementById(`${idPrefix}-qty-controls-${productId}`);
             if (controls) {
                 controls.style.display = e.target.checked ? 'block' : 'none';
@@ -129,6 +133,7 @@ function renderItemLists() {
                     if (input) input.value = 0;
                 }
             }
+            // ★★★ 修正箇所: ここまで ★★★
         });
     });
 }
