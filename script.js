@@ -1,7 +1,9 @@
 // ==========================================================
 // ★ 1. 【設定必須】GASのウェブアプリURLをここに貼り付けてください
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwRe84cPNCe-JxWTWz__JKNmsvGZCdfuVBaF-VpNC0wxdbcQaOygbimt0nCbZGI7YJP/exec'; 
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwRe84cPNCe-JxWTWz__JKNmsvGZCdfuVBaF-VpNC0wxdbcQaOygbimt0nCbG7YJP/exec'; 
 // ==========================================================
+// ★ 2. 【設定必須】販売記録に適用する一律の商品単価をここに設定してください
+const SALE_UNIT_PRICE = 300; // 例: 全ての商品を300円と仮定
 
 let productList = []; // 商品情報を格納
 
@@ -42,12 +44,20 @@ async function fetchProductData() {
     
     try {
         const response = await fetch(productUrl);
-        productList = await response.json();
+        
+        // ★修正: GASから返される単価情報は不要になったが、商品名リストは使う
+        const fullProductList = await response.json(); 
 
         // GASからエラーが返された場合
-        if (productList.error) {
-             throw new Error(productList.error);
+        if (fullProductList.error) {
+             throw new Error(fullProductList.error);
         }
+        
+        // 商品名と連番のみを保持
+        productList = fullProductList.map((p, index) => ({
+            name: p.name,
+            id: `item-${index}`
+        }));
         
         renderItemLists();
     } catch (error) {
@@ -62,12 +72,11 @@ function renderItemLists() {
     const saleListDiv = document.getElementById('sale-item-list');
 
     stockListDiv.innerHTML = '<label>在庫補充商品:</label><br>';
-    saleListDiv.innerHTML = '<label>販売記録商品:</label><br>';
+    // ★修正: 販売リストに単価を表示しない
+    saleListDiv.innerHTML = `<p style="font-style:italic; margin-bottom: 10px;">単価一律: ¥${SALE_UNIT_PRICE.toLocaleString()}</p><label>販売記録商品:</label><br>`;
 
     productList.forEach(product => {
-        // IDを生成する際に、商品名ではなくインデックスを使用し、安全性を確保
-        const index = productList.indexOf(product);
-        const productId = `item-${index}`; 
+        const productId = product.id; 
         
         // 1. 在庫補充リスト (stock)
         const stockHtml = `
@@ -78,11 +87,11 @@ function renderItemLists() {
                 <div id="stock-qty-controls-${productId}" class="quantity-controls" style="margin-top: 5px; margin-left: 20px; display: none;">
                     <label for="qty-stock-${productId}" style="font-weight: normal; display: inline-block; width: 50px;">数量:</label>
                     <input type="number" id="qty-stock-${productId}" min="0" value="0">
-                    <button type="button" onclick="updateQuantity('qty-stock-${productId}', 1)">+1</button>
-                    <button type="button" onclick="updateQuantity('qty-stock-${productId}', 5)">+5</button>
-                    <button type="button" onclick="updateQuantity('qty-stock-${productId}', 10)">+10</button>
-                    <button type="button" onclick="updateQuantity('qty-stock-${productId}', 100)">+100</button>
-                    <button type="button" class="reset-btn" onclick="resetSingleQuantity('qty-stock-${productId}')">0</button>
+                    <button type="button" onclick="updateQuantity('qty-stock-${productId}', 1, 'stock')">+1</button>
+                    <button type="button" onclick="updateQuantity('qty-stock-${productId}', 5, 'stock')">+5</button>
+                    <button type="button" onclick="updateQuantity('qty-stock-${productId}', 10, 'stock')">+10</button>
+                    <button type="button" onclick="updateQuantity('qty-stock-${productId}', 100, 'stock')">+100</button>
+                    <button type="button" class="reset-btn" onclick="resetSingleQuantity('qty-stock-${productId}', 'stock')">0</button>
                 </div>
             </div>
         `;
@@ -91,21 +100,28 @@ function renderItemLists() {
         // 2. 販売記録リスト (sale)
         const saleHtml = `
             <div style="border: 1px solid #eee; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
-                <input type="checkbox" id="sale-${productId}" name="sale_item" value="${product.name}" data-price="${product.price}" style="width: auto;">
-                <label for="sale-${productId}" style="display: inline; font-weight: normal;">${product.name} (¥${product.price.toLocaleString()})</label>
+                <input type="checkbox" id="sale-${productId}" name="sale_item" value="${product.name}" style="width: auto;">
+                <label for="sale-${productId}" style="display: inline; font-weight: normal;">${product.name}</label>
                 
                 <div id="sale-qty-controls-${productId}" class="quantity-controls" style="margin-top: 5px; margin-left: 20px; display: none;">
                     <label for="qty-sale-${productId}" style="font-weight: normal; display: inline-block; width: 50px;">数量:</label>
-                    <input type="number" id="qty-sale-${productId}" min="0" value="0">
-                    <button type="button" onclick="updateQuantity('qty-sale-${productId}', 1)">+1</button>
-                    <button type="button" onclick="updateQuantity('qty-sale-${productId}', 5)">+5</button>
-                    <button type="button" onclick="updateQuantity('qty-sale-${productId}', 10)">+10</button>
-                    <button type="button" onclick="updateQuantity('qty-sale-${productId}', 100)">+100</button>
-                    <button type="button" class="reset-btn" onclick="resetSingleQuantity('qty-sale-${productId}')">0</button>
+                    <input type="number" id="qty-sale-${productId}" min="0" value="0" oninput="updateSaleTotalDisplay()">
+                    <button type="button" onclick="updateQuantity('qty-sale-${productId}', 1, 'sale')">+1</button>
+                    <button type="button" onclick="updateQuantity('qty-sale-${productId}', 5, 'sale')">+5</button>
+                    <button type="button" onclick="updateQuantity('qty-sale-${productId}', 10, 'sale')">+10</button>
+                    <button type="button" onclick="updateQuantity('qty-sale-${productId}', 100, 'sale')">+100</button>
+                    <button type="button" class="reset-btn" onclick="resetSingleQuantity('qty-sale-${productId}', 'sale')">0</button>
                 </div>
             </div>
         `;
         saleListDiv.insertAdjacentHTML('beforeend', saleHtml);
+        
+        // ★修正: input要素にイベントリスナーを追加（数量変更時）
+        const qtyInput = document.getElementById(`qty-sale-${productId}`);
+        if(qtyInput) {
+            qtyInput.addEventListener('change', updateSaleTotalDisplay);
+            qtyInput.addEventListener('input', updateSaleTotalDisplay);
+        }
     });
 
     // チェックボックスの状態変更時に数量コントロールを表示/非表示にするイベントリスナーを設定
@@ -124,13 +140,19 @@ function renderItemLists() {
                     const input = document.getElementById(`qty-${idPrefix}-${productId}`);
                     if (input) input.value = 0;
                 }
+                
+                // ★修正: チェックボックス変更時に合計金額を再計算
+                if (idPrefix === 'sale') {
+                    updateSaleTotalDisplay();
+                }
             }
         });
     });
 }
 
 // 数量ボタンの処理関数
-function updateQuantity(inputId, value) {
+// ★修正: type引数を追加し、販売記録の場合は合計金額を更新
+function updateQuantity(inputId, value, type) {
     const input = document.getElementById(inputId);
     let currentValue = parseInt(input.value) || 0;
     
@@ -141,14 +163,41 @@ function updateQuantity(inputId, value) {
     }
     
     input.value = newValue;
+    
+    if (type === 'sale') {
+        updateSaleTotalDisplay();
+    }
 }
 
 // 個別リセット関数
-function resetSingleQuantity(inputId) {
+// ★修正: type引数を追加し、販売記録の場合は合計金額を更新
+function resetSingleQuantity(inputId, type) {
     const input = document.getElementById(inputId);
     if (input) {
         input.value = 0;
     }
+    
+    if (type === 'sale') {
+        updateSaleTotalDisplay();
+    }
+}
+
+// ★新規追加: 販売記録の合計金額をリアルタイムで更新する関数
+function updateSaleTotalDisplay() {
+    const totalDisplay = document.getElementById('sale-total-display');
+    const checkedItems = document.querySelectorAll('input[name="sale_item"]:checked');
+    let totalSales = 0;
+    
+    checkedItems.forEach(item => {
+        const parts = item.id.split('-');
+        const productId = parts.slice(1).join('-');
+        const quantityInput = document.getElementById(`qty-sale-${productId}`);
+        const quantity = parseInt(quantityInput.value) || 0;
+        
+        totalSales += quantity * SALE_UNIT_PRICE;
+    });
+
+    totalDisplay.textContent = `合計金額: ¥${totalSales.toLocaleString()}`;
 }
 
 
@@ -228,6 +277,11 @@ function showTab(tabId) {
     const contentElement = document.getElementById(`${tabId}-form`);
     if (contentElement) {
         contentElement.style.display = 'block';
+        
+        // ★修正: 販売記録タブに切り替わったときに合計金額をリセット
+        if (tabId === 'sale') {
+            updateSaleTotalDisplay();
+        }
     }
 }
 
@@ -258,7 +312,8 @@ async function submitData(event, type) {
         
         try {
             selectedItems.forEach(item => {
-                const productId = String(item.id).split('-').slice(1).join('-');
+                const parts = item.id.split('-');
+                const productId = parts.slice(1).join('-');
                 const quantityInput = document.getElementById(`qty-stock-${productId}`);
                 const quantity = parseInt(quantityInput.value);
 
@@ -299,7 +354,6 @@ async function submitData(event, type) {
 
         records.push({
             "item_type": "expense",
-            // ★修正: 費目を材料費に固定
             "費目": '材料費', 
             "金額": form.querySelector('#amount-expense').value,
             "メモ": memo
@@ -307,7 +361,7 @@ async function submitData(event, type) {
 
     } else if (type === '販売記録') {
         const selectedItems = form.querySelectorAll('input[name="sale_item"]:checked');
-        const memo = form.querySelector('#memo-sale').value; // ★修正: 販売記録のメモを取得
+        const memo = form.querySelector('#memo-sale').value; 
 
         if (selectedItems.length === 0) {
             alert('販売した商品を1つ以上選択してください。');
@@ -316,19 +370,15 @@ async function submitData(event, type) {
 
         try {
             selectedItems.forEach(item => {
-                const productId = String(item.id).split('-').slice(1).join('-');
+                const parts = item.id.split('-');
+                const productId = parts.slice(1).join('-');
                 const quantityInput = document.getElementById(`qty-sale-${productId}`);
                 const quantity = parseInt(quantityInput.value);
-                const unitPrice = parseFloat(item.dataset.price);
-
+                const unitPrice = SALE_UNIT_PRICE; // ★修正: 一律単価を使用
+                
                 if (isNaN(quantity) || quantity < 1) {
                      alert(`${item.value} の数量を正しく入力してください（1以上）。`);
                      throw new Error("Invalid quantity"); 
-                }
-                
-                if (unitPrice === 0 || isNaN(unitPrice)) {
-                     alert(`${item.value} の単価情報が（スプシで）設定されていません。`);
-                     throw new Error("Invalid price");
                 }
                 
                 const totalAmount = unitPrice * quantity;
@@ -338,11 +388,11 @@ async function submitData(event, type) {
                     "商品名": item.value,
                     "数量": quantity,
                     "売上金額": totalAmount,
-                    "メモ": memo // ★修正: 販売記録のメモをレコードに追加
+                    "メモ": memo 
                 });
             });
         } catch(e) {
-            if (e.message === "Invalid quantity" || e.message === "Invalid price") return;
+            if (e.message === "Invalid quantity") return;
             throw e;
         }
     } else {
@@ -367,21 +417,26 @@ async function submitData(event, type) {
         if (result.result === 'success') {
             alert(`${type}のデータ ${records.length} 件が正常に送信され、Discordに通知されました！`);
             
-            // ★修正: 送信成功後の数量コントロールを閉じる処理を追加
+            // ★修正: 送信成功後の数量コントロールを閉じる処理
             if (type === '在庫補充' || type === '販売記録') {
                 const items = form.querySelectorAll('input[name$="_item"]:checked');
                 items.forEach(item => {
-                    item.checked = false; // チェックを外す
+                    item.checked = false; 
                     const parts = item.id.split('-');
                     const idPrefix = parts[0]; 
                     const productId = parts.slice(1).join('-'); 
                     const controls = document.getElementById(`${idPrefix}-qty-controls-${productId}`);
                     if (controls) {
-                        controls.style.display = 'none'; // 数量コントロールを非表示
+                        controls.style.display = 'none'; 
                     }
                     const input = document.getElementById(`qty-${idPrefix}-${productId}`);
-                    if (input) input.value = 0; // 数量をリセット
+                    if (input) input.value = 0; 
                 });
+                
+                // ★修正: 販売記録送信後は合計金額表示もリセット
+                if (type === '販売記録') {
+                    updateSaleTotalDisplay();
+                }
             }
             
             form.reset();
