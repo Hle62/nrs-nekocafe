@@ -238,13 +238,13 @@ async function submitData(event, type) {
     }
     
     // 複数データを格納するための配列
-    let dataToSendArray = []; 
+    let records = []; 
     const form = event.target;
     
     if (type === '在庫補充') {
         const selectedItems = form.querySelectorAll('input[name="stock_item"]:checked');
-        if (selectedItems.length === 0) {
-            alert('補充する商品を1つ以上選択してください。');
+        if (selectedItems.length === 0 && form.querySelector('#memo-stock').value.trim() === '') {
+            alert('補充する商品を1つ以上選択するか、メモを入力してください。');
             return;
         }
         
@@ -255,16 +255,16 @@ async function submitData(event, type) {
                 const quantityInput = document.getElementById(`qty-stock-${productId}`);
                 const quantity = parseInt(quantityInput.value);
 
-                if (isNaN(quantity) || quantity < 1) {
+                if (quantity < 1) {
+                     // 0以下の数量は記録しない（チェックされている場合はエラー）
                      alert(`${item.value} の数量を正しく入力してください（1以上）。`);
                      throw new Error("Invalid quantity"); 
                 }
 
-                dataToSendArray.push({
-                    "type": type,
-                    "担当者名": loggedInStaff,
+                records.push({
+                    "item_type": "stock",
                     "商品名": item.value,
-                    "補充数量": quantity,
+                    "数量": quantity,
                     "メモ": form.querySelector('#memo-stock').value
                 });
             });
@@ -275,9 +275,9 @@ async function submitData(event, type) {
         
     } else if (type === '経費申請') {
         // 経費申請は単一送信のまま
-        dataToSendArray.push({
-            "type": type,
-            "担当者名": loggedInStaff,
+        // 経費申請フォームのバリデーションはHTMLのrequired属性に依存
+        records.push({
+            "item_type": "expense",
             "費目": form.querySelector('#category-expense').value,
             "金額": form.querySelector('#amount-expense').value,
             "メモ": form.querySelector('#memo-expense').value
@@ -298,7 +298,7 @@ async function submitData(event, type) {
                 const quantity = parseInt(quantityInput.value);
                 const unitPrice = parseFloat(item.dataset.price);
 
-                if (isNaN(quantity) || quantity < 1) {
+                if (quantity < 1) {
                      alert(`${item.value} の数量を正しく入力してください（1以上）。`);
                      throw new Error("Invalid quantity"); 
                 }
@@ -310,11 +310,10 @@ async function submitData(event, type) {
                 
                 const totalAmount = unitPrice * quantity;
                 
-                dataToSendArray.push({
-                    "type": type,
-                    "担当者名": loggedInStaff,
+                records.push({
+                    "item_type": "sale",
                     "商品名": item.value,
-                    "販売数量": quantity,
+                    "数量": quantity,
                     "売上金額": totalAmount
                 });
             });
@@ -327,32 +326,32 @@ async function submitData(event, type) {
         return;
     }
 
-    // ★ 複数データ送信をGASが一括処理できるように、ループ処理を実行
-    let successCount = 0;
+    // ★ 複数データ送信をGASが一括処理できるように、配列を送信
+    const bulkData = {
+        "type": type, 
+        "담당자명": loggedInStaff,
+        "records": records 
+    };
 
-    for (const dataToSend of dataToSendArray) {
-        try {
-            const response = await fetch(GAS_WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify(dataToSend),
-            });
-            const result = await response.json();
+    try {
+        const response = await fetch(GAS_WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify(bulkData),
+        });
+        const result = await response.json();
 
-            if (result.result !== 'success') {
-                alert(`処理中にエラーが発生しました (${dataToSend.商品名} の送信失敗): ${result.message}`);
-                return; // 1つでも失敗したら処理を中断
-            }
-            successCount++;
-        } catch (error) {
-            console.error('通信エラー:', error);
-            alert(`致命的な通信エラーが発生しました (${dataToSend.商品名})。システム管理者に連絡してください。`);
-            return; // 1つでも失敗したら処理を中断
+        if (result.result === 'success') {
+            alert(`${type}のデータ ${records.length} 件が正常に送信され、Discordに通知されました！`);
+            form.reset();
+        } else if (result.result === 'error') {
+             alert(`送信エラーが発生しました (GASエラー: ${result.message})。システム管理者に連絡してください。`);
+        } else {
+            alert('データの送信に失敗しました。予期せぬ応答です。');
         }
+    } catch (error) {
+        console.error('通信エラー:', error);
+        alert('致命的な通信エラーが発生しました。システム管理者に連絡してください。');
     }
-
-    // すべての送信が成功した場合
-    alert(`${type}のデータ ${successCount} 件が正常に送信され、Discordに通知されました！`);
-    form.reset();
 }
 
 
