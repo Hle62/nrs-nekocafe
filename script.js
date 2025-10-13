@@ -1,6 +1,6 @@
 // ==========================================================
 // ★ 1. 【設定必須】GASのウェブアプリURLをここに貼り付けてください
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwRe84cPNCe-JxWTWz__JKNmsvGZCdfuVBaF-VpNC0wxdbcQaOygbimt0nCbZGI7YJP/exec'; 
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwRe84cPNCe-JxWTWz__JKNmsvGZCdfuVBaF-VpNC0wxdbcQaOygbimt0nCbG7YJP/exec'; 
 // ==========================================================
 
 let productList = []; // 商品情報を格納
@@ -65,15 +65,10 @@ function renderItemLists() {
     saleListDiv.innerHTML = '<label>販売記録商品:</label><br>';
 
     productList.forEach(product => {
-        // ★★★ 修正箇所（1/2）：IDを生成する際に、商品名ではなくインデックスを使用し、安全性を確保 ★★★
-        // 商品名に依存しない、ループインデックス（0から始まる連番）と商品名を組み合わせて一意なIDを作成
+        // IDを生成する際に、商品名ではなくインデックスを使用し、安全性を確保
         const index = productList.indexOf(product);
         const productId = `item-${index}`; 
         
-        // 元の商品名から特殊文字を削除したものをIDに使うとハイフンでIDが重複する可能性があったため、連番を使うのが最も安全。
-        // ★★★ 修正箇所: ここまで ★★★
-
-
         // 1. 在庫補充リスト (stock)
         const stockHtml = `
             <div style="border: 1px solid #eee; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
@@ -116,12 +111,9 @@ function renderItemLists() {
     // チェックボックスの状態変更時に数量コントロールを表示/非表示にするイベントリスナーを設定
     document.querySelectorAll('input[type="checkbox"][name$="_item"]').forEach(checkbox => {
         checkbox.addEventListener('change', (e) => {
-            // ★★★ 修正箇所（2/2）：IDの分割方法を変更し、正確なproductIdを取得 ★★★
-            // e.target.id は "stock-item-0" や "sale-item-1" の形式になっている
             const parts = e.target.id.split('-');
-            const idPrefix = parts[0]; // 'stock' or 'sale'
-            // ID生成時に 'item-X' の形式にしたため、後半部分全体を取得する
-            const productId = parts.slice(1).join('-'); // 'item-0', 'item-1', ...
+            const idPrefix = parts[0]; 
+            const productId = parts.slice(1).join('-'); 
             
             const controls = document.getElementById(`${idPrefix}-qty-controls-${productId}`);
             if (controls) {
@@ -133,7 +125,6 @@ function renderItemLists() {
                     if (input) input.value = 0;
                 }
             }
-            // ★★★ 修正箇所: ここまで ★★★
         });
     });
 }
@@ -300,15 +291,24 @@ async function submitData(event, type) {
         }
         
     } else if (type === '経費申請') {
+        const memo = form.querySelector('#memo-expense').value;
+        if (memo.trim() === '') {
+            alert('経費申請にはメモが必須です。');
+            return;
+        }
+
         records.push({
             "item_type": "expense",
-            "費目": form.querySelector('#category-expense').value,
+            // ★修正: 費目を材料費に固定
+            "費目": '材料費', 
             "金額": form.querySelector('#amount-expense').value,
-            "メモ": form.querySelector('#memo-expense').value
+            "メモ": memo
         });
 
     } else if (type === '販売記録') {
         const selectedItems = form.querySelectorAll('input[name="sale_item"]:checked');
+        const memo = form.querySelector('#memo-sale').value; // ★修正: 販売記録のメモを取得
+
         if (selectedItems.length === 0) {
             alert('販売した商品を1つ以上選択してください。');
             return;
@@ -337,7 +337,8 @@ async function submitData(event, type) {
                     "item_type": "sale",
                     "商品名": item.value,
                     "数量": quantity,
-                    "売上金額": totalAmount
+                    "売上金額": totalAmount,
+                    "メモ": memo // ★修正: 販売記録のメモをレコードに追加
                 });
             });
         } catch(e) {
@@ -365,6 +366,24 @@ async function submitData(event, type) {
 
         if (result.result === 'success') {
             alert(`${type}のデータ ${records.length} 件が正常に送信され、Discordに通知されました！`);
+            
+            // ★修正: 送信成功後の数量コントロールを閉じる処理を追加
+            if (type === '在庫補充' || type === '販売記録') {
+                const items = form.querySelectorAll('input[name$="_item"]:checked');
+                items.forEach(item => {
+                    item.checked = false; // チェックを外す
+                    const parts = item.id.split('-');
+                    const idPrefix = parts[0]; 
+                    const productId = parts.slice(1).join('-'); 
+                    const controls = document.getElementById(`${idPrefix}-qty-controls-${productId}`);
+                    if (controls) {
+                        controls.style.display = 'none'; // 数量コントロールを非表示
+                    }
+                    const input = document.getElementById(`qty-${idPrefix}-${productId}`);
+                    if (input) input.value = 0; // 数量をリセット
+                });
+            }
+            
             form.reset();
         } else if (result.result === 'error') {
             alert(`送信エラーが発生しました (GASエラー): ${result.message}`);

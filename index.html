@@ -3,131 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐈 猫カフェ管理サイト</title>
+    <title>猫カフェ管理アプリ</title>
     <style>
-        body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 0 15px; }
-        .input-section { border: 1px solid #ccc; padding: 15px; margin-top: 20px; border-radius: 8px; }
-        .form-group { display: none; }
-        label { display: block; margin-top: 10px; font-weight: bold; }
-        input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
-        button { padding: 10px 15px; margin-top: 15px; background-color: #333; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        button:hover { background-color: #555; }
-        #login-section button { background-color: #007bff; }
-        #login-section button:hover { background-color: #0056b3; }
-        #current-staff-display { font-weight: bold; color: green; margin-bottom: 10px; }
-        hr { margin: 30px 0; border: 0; border-top: 1px solid #eee; }
-
-        /* --- タブ用スタイル --- */
-        #tab-container { margin-top: 20px; }
-        #tab-buttons { display: flex; margin-bottom: -1px; }
-        .tab-button { 
-            padding: 10px 15px; border: 1px solid #ccc; border-bottom: none; 
-            background-color: #f0f0f0; cursor: pointer; border-radius: 5px 5px 0 0; 
-            margin-right: 5px; font-weight: bold;
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
         }
-        .tab-button.active { 
-            background-color: white; border-color: #ccc; border-bottom: 1px solid white; 
+        #app-container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        .tab-content { border: 1px solid #ccc; padding: 20px; border-radius: 0 5px 5px 5px; background-color: white; }
-        
-        /* 数量入力補助のための調整 */
-        .quantity-controls button {
-            padding: 5px 10px; 
-            margin: 0 2px 0 0;
-            margin-top: 0;
-            font-size: 0.9em;
-            background-color: #6c757d;
+        h1 {
+            color: #333;
+            text-align: center;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        #login-section, #main-app {
+            padding: 10px;
+        }
+        #main-app {
+            display: none;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #5cb85c;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        .tab-bar {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ccc;
+        }
+        .tab-button {
+            flex-grow: 1;
+            padding: 10px;
+            border: none;
+            background-color: #f0f0f0;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+            font-weight: bold;
+            color: #555;
+            transition: background-color 0.3s;
+            margin-right: 2px;
+        }
+        .tab-button.active {
+            background-color: white;
+            border-bottom: 2px solid #5cb85c;
+            color: #333;
+        }
+        .form-content {
+            padding: 15px 0;
+            border-top: 0;
         }
         .quantity-controls input[type="number"] {
-            width: 70px !important;
-            display: inline-block !important;
-            margin-top: 0 !important;
+            width: 80px;
+            display: inline-block;
+            margin-right: 5px;
         }
-        /* ★ 個別リセットボタンのスタイル */
-        .quantity-controls .reset-btn {
-            background-color: red;
-            margin-left: 10px;
+        .quantity-controls button {
+            width: auto;
             padding: 5px 10px;
+            margin: 0 2px;
+            font-size: 14px;
+            background-color: #337ab7;
+        }
+        .quantity-controls button:hover {
+            background-color: #286090;
+        }
+        .quantity-controls .reset-btn {
+            background-color: #f0ad4e;
+        }
+        .quantity-controls .reset-btn:hover {
+            background-color: #ec971f;
+        }
+        .info-display {
+            text-align: right;
+            font-size: 0.9em;
+            color: #555;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 5px;
         }
     </style>
 </head>
 <body>
-    <h1>🐈 猫カフェ管理サイト</h1>
-
-    <div id="login-section" class="input-section">
-        <h2>ログイン</h2>
-        
-        <label for="login-staff">担当者名を選択:</label>
-        <select id="login-staff" required>
-            <option value="">-- 読み込み中 --</option>
-        </select>
-        
-        <button onclick="attemptLogin()">ログイン</button>
-        <p id="login-message" style="color: red;"></p>
-    </div>
-
-    <div id="main-app" style="display: none;">
-        <div id="auth-info" class="input-section">
-            <p id="current-staff-display"></p>
-            <button onclick="localStorage.removeItem('loggedInStaff'); window.location.reload();">ログアウト</button>
+    <div id="app-container">
+        <h1>猫カフェ業務管理</h1>
+        <div id="login-section">
+            <label for="login-staff">担当者名:</label>
+            <select id="login-staff"></select>
+            <p id="login-message" style="color: red;"></p>
+            <button onclick="attemptLogin()">ログイン</button>
         </div>
 
-        <div id="tab-container">
-            <div id="tab-buttons">
-                <div class="tab-button active" onclick="showTab('stock')">📦 在庫補充</div>
-                <div class="tab-button" onclick="showTab('expense')">💰 経費申請</div>
-                <div class="tab-button" onclick="showTab('sale')">🎉 販売記録</div>
+        <div id="main-app">
+            <div class="info-display" id="current-staff-display"></div>
+            
+            <div class="tab-bar">
+                <button class="tab-button" onclick="showTab('stock')">在庫補充</button>
+                <button class="tab-button" onclick="showTab('sale')">販売記録</button>
+                <button class="tab-button" onclick="showTab('expense')">経費申請</button>
             </div>
 
-            <div id="tab-content-wrapper" class="tab-content">
-                
-                <div id="stock-form" class="form-content">
-                    <h2>📦 在庫補充記録</h2>
-                    <form onsubmit="submitData(event, '在庫補充')">
-                        <div id="stock-item-list">
-                            <p>商品リストを読み込み中...</p>
+            <div id="stock-form" class="form-content">
+                <form id="stock-form-data" onsubmit="submitData(event, '在庫補充')">
+                    <div id="stock-item-list">
                         </div>
+                    <label for="memo-stock">共通メモ (任意):</label>
+                    <textarea id="memo-stock" rows="2"></textarea>
+                    <button type="submit">在庫補充を送信</button>
+                </form>
+            </div>
 
-                        <label for="memo-stock">メモ:</label>
-                        <textarea id="memo-stock"></textarea><br>
-
-                        <button type="submit">在庫補充を記録</button>
-                    </form>
-                </div>
-
-                <div id="expense-form" class="form-content" style="display: none;">
-                    <h2>💰 経費申請記録</h2>
-                    <form onsubmit="submitData(event, '経費申請')">
-                        <label for="category-expense">費目:</label>
-                        <select id="category-expense" required>
-                            <option value="材料費">材料費</option>
-                            <option value="雑費">雑費</option>
-                            <option value="備品購入費">備品購入費</option>
-                        </select><br>
-
-                        <label for="amount-expense">金額 (円):</label>
-                        <input type="number" id="amount-expense" min="1" required><br>
-
-                        <label for="memo-expense">メモ:</label>
-                        <textarea id="memo-expense"></textarea><br>
-
-                        <button type="submit">経費を申請</button>
-                    </form>
-                </div>
-
-                <div id="sale-form" class="form-content" style="display: none;">
-                    <h2>🎉 販売記録</h2>
-                    <form onsubmit="submitData(event, '販売記録')">
-                        <div id="sale-item-list">
-                            <p>商品リストを読み込み中...</p>
+            <div id="sale-form" class="form-content">
+                <form id="sale-form-data" onsubmit="submitData(event, '販売記録')">
+                    <div id="sale-item-list">
                         </div>
+                    <label for="memo-sale">メモ (任意):</label>
+                    <textarea id="memo-sale" rows="2"></textarea>
+                    <button type="submit">販売記録を送信</button>
+                </form>
+            </div>
 
-                        <p style="margin-top: 10px; font-style: italic;">※ 売上金額は自動計算されます。</p>
+            <div id="expense-form" class="form-content">
+                <form id="expense-form-data" onsubmit="submitData(event, '経費申請')">
+                    <label>費目:</label>
+                    <input type="text" id="category-expense" value="材料費" readonly style="background-color: #eee;">
 
-                        <button type="submit">販売を記録</button>
-                    </form>
-                </div>
-
-            </div></div></div><script src="script.js"></script>
+                    <label for="amount-expense">金額 (円):</label>
+                    <input type="number" id="amount-expense" required min="1" inputmode="numeric">
+                    
+                    <label for="memo-expense">メモ (必須):</label>
+                    <textarea id="memo-expense" rows="2" required></textarea>
+                    
+                    <button type="submit">経費申請を送信</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
