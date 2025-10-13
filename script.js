@@ -243,8 +243,8 @@ async function submitData(event, type) {
     
     if (type === '在庫補充') {
         const selectedItems = form.querySelectorAll('input[name="stock_item"]:checked');
-        if (selectedItems.length === 0 && form.querySelector('#memo-stock').value.trim() === '') {
-            alert('補充する商品を1つ以上選択するか、メモを入力してください。');
+        if (selectedItems.length === 0) {
+            alert('補充する商品を1つ以上選択してください。');
             return;
         }
         
@@ -255,8 +255,7 @@ async function submitData(event, type) {
                 const quantityInput = document.getElementById(`qty-stock-${productId}`);
                 const quantity = parseInt(quantityInput.value);
 
-                if (quantity < 1) {
-                     // 0以下の数量は記録しない（チェックされている場合はエラー）
+                if (isNaN(quantity) || quantity < 1) {
                      alert(`${item.value} の数量を正しく入力してください（1以上）。`);
                      throw new Error("Invalid quantity"); 
                 }
@@ -275,7 +274,6 @@ async function submitData(event, type) {
         
     } else if (type === '経費申請') {
         // 経費申請は単一送信のまま
-        // 経費申請フォームのバリデーションはHTMLのrequired属性に依存
         records.push({
             "item_type": "expense",
             "費目": form.querySelector('#category-expense').value,
@@ -298,7 +296,7 @@ async function submitData(event, type) {
                 const quantity = parseInt(quantityInput.value);
                 const unitPrice = parseFloat(item.dataset.price);
 
-                if (quantity < 1) {
+                if (isNaN(quantity) || quantity < 1) {
                      alert(`${item.value} の数量を正しく入力してください（1以上）。`);
                      throw new Error("Invalid quantity"); 
                 }
@@ -329,7 +327,7 @@ async function submitData(event, type) {
     // ★ 複数データ送信をGASが一括処理できるように、配列を送信
     const bulkData = {
         "type": type, 
-        "담당자명": loggedInStaff,
+        "担当者名": loggedInStaff, // ★修正済み: 正しいキーを使用
         "records": records 
     };
 
