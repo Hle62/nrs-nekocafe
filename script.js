@@ -53,7 +53,6 @@ async function fetchStaffNames() {
         });
     } catch (error) {
         console.error('従業員リスト取得エラー:', error);
-        // ★修正: エラーメッセージを具体的に
         staffDropdown.innerHTML = '<option value="">エラー: 従業員リスト取得失敗</option>';
         alert(`従業員リストの取得に失敗しました。GASエラー: ${error.message}`);
     }
@@ -64,9 +63,10 @@ async function fetchProductData() {
     const productUrl = `${GAS_WEB_APP_URL}?action=getProducts`;
     
     try {
-        // ★修正: ローディングメッセージを明確にする
-        document.getElementById('stock-item-list').innerHTML = '<p>商品リストを取得中...</p>';
-        document.getElementById('sale-item-list').innerHTML = '<p>商品リストを取得中...</p>';
+        // ★修正: ローディングメッセージを表示
+        const loadingMessage = '<p>商品リストを**高速**で取得中...</p>';
+        document.getElementById('stock-item-list').innerHTML = loadingMessage;
+        document.getElementById('sale-item-list').innerHTML = loadingMessage;
         
         const response = await fetch(productUrl);
         
@@ -245,13 +245,13 @@ function checkLoginStatus() {
         // 担当者名だけ先に設定
         document.getElementById('current-staff-display').textContent = `${loggedInStaff}さんとしてログイン中`;
         
-        // ★修正ポイント: 商品情報取得（非同期）が完了するのを待ってから、メインアプリを表示する
+        // ★修正ポイント: 非同期処理を待ってから、メインアプリを表示する
         fetchProductData().then(() => {
             showMainApp(loggedInStaff);
         }).catch(error => {
-            // エラーが発生した場合、ログインセクションは非表示にせず、エラーメッセージを表示
+            // エラーが発生した場合も、ユーザーに状況を伝える
             document.getElementById('login-section').style.display = 'block';
-            document.getElementById('login-message').textContent = 'データ取得エラーのため、再ログインまたはリロードしてください。';
+            document.getElementById('login-message').textContent = 'データ取得エラーのため、リロードまたは再ログインしてください。';
             console.error('データ取得エラーにより画面表示を完了できませんでした。', error);
         });
         
@@ -272,8 +272,8 @@ async function attemptLogin() {
         return;
     }
     
-    // ★修正: メッセージを具体的に
-    messageElement.textContent = '認証中... (商品リスト取得までお待ちください)';
+    // ★修正: ログイン成功後、商品のロード開始時にメッセージを更新
+    messageElement.textContent = '認証成功... 商品リストをロード中';
 
     const authUrl = `${GAS_WEB_APP_URL}?staffName=${encodeURIComponent(staffName)}`;
 
@@ -286,7 +286,7 @@ async function attemptLogin() {
             
             document.getElementById('login-section').style.display = 'none';
             
-            // ★修正ポイント: 非同期処理を待ってから showMainApp() を呼び出す
+            // ★修正ポイント: 商品データ取得を待ってから showMainApp() を呼び出す
             await fetchProductData(); 
             showMainApp(staffName);
 
@@ -330,10 +330,19 @@ function showTab(tabId) {
 async function submitData(event, type) {
     event.preventDefault();
     
+    const submitButton = event.target.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton.textContent;
+    
+    // ★修正: 送信ボタンのステータスを変更し、ユーザーに処理中であることを伝える
+    submitButton.textContent = '送信中...';
+    submitButton.disabled = true;
+
     const loggedInStaff = localStorage.getItem('loggedInStaff');
     if (!loggedInStaff) {
         alert('ログイン情報が失効しています。再度ログインしてください。');
         window.location.reload();
+        submitButton.textContent = originalButtonText;
+        submitButton.disabled = false;
         return;
     }
     
@@ -346,6 +355,8 @@ async function submitData(event, type) {
 
         if (selectedItems.length === 0 && memo.trim() === '') {
              alert('補充する商品を1つ以上選択するか、メモを入力してください。');
+             submitButton.textContent = originalButtonText;
+             submitButton.disabled = false;
              return;
         }
         
@@ -379,7 +390,11 @@ async function submitData(event, type) {
             }
 
         } catch(e) {
-            if (e.message === "Invalid quantity") return;
+            if (e.message === "Invalid quantity") {
+                 submitButton.textContent = originalButtonText;
+                 submitButton.disabled = false;
+                 return;
+            }
             throw e;
         }
         
@@ -399,6 +414,8 @@ async function submitData(event, type) {
 
         if (selectedItems.length === 0) {
             alert('販売した商品を1つ以上選択してください。');
+            submitButton.textContent = originalButtonText;
+            submitButton.disabled = false;
             return;
         }
 
@@ -426,17 +443,23 @@ async function submitData(event, type) {
                 });
             });
         } catch(e) {
-            if (e.message === "Invalid quantity") return;
+            if (e.message === "Invalid quantity") {
+                 submitButton.textContent = originalButtonText;
+                 submitButton.disabled = false;
+                 return;
+            }
             throw e;
         }
     } else {
         alert('無効なフォームです。');
+        submitButton.textContent = originalButtonText;
+        submitButton.disabled = false;
         return;
     }
 
     const bulkData = {
         "type": type, 
-        "担当者名": loggedInStaff,
+        "담당者명": loggedInStaff,
         "records": records 
     };
 
@@ -479,7 +502,11 @@ async function submitData(event, type) {
         }
     } catch (error) {
         console.error('通信エラー:', error);
-        alert(`致命的な通信エラーが発生しました。システム管理者/デプロイ設定を確認してください。エラー詳細: ${error.message}`);
+        alert(`致命的な通信エラーが発生しました。システム管理者に連絡してください。`);
+    } finally {
+        // ★修正: 処理の成功・失敗に関わらずボタンの状態を戻す
+        submitButton.textContent = originalButtonText;
+        submitButton.disabled = false;
     }
 }
 
