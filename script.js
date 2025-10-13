@@ -38,7 +38,6 @@ async function fetchProductData() {
         const response = await fetch(productUrl);
         productList = await response.json();
         
-        // ★ ドロップダウンではなく、チェックボックスリストを生成
         renderItemLists();
     } catch (error) {
         console.error('商品情報取得エラー:', error);
@@ -55,7 +54,6 @@ function renderItemLists() {
     saleListDiv.innerHTML = '<label>販売記録商品:</label><br>';
 
     productList.forEach(product => {
-        // スペース削除で一意なID生成 (DOM操作用)
         const productId = product.name.replace(/\s/g, ''); 
 
         // 1. 在庫補充リスト (stock)
@@ -66,11 +64,12 @@ function renderItemLists() {
                 
                 <div id="stock-qty-controls-${productId}" class="quantity-controls" style="margin-top: 5px; margin-left: 20px; display: none;">
                     <label for="qty-stock-${productId}" style="font-weight: normal; display: inline-block; width: 50px;">数量:</label>
-                    <input type="number" id="qty-stock-${productId}" min="1" value="1" >
+                    <input type="number" id="qty-stock-${productId}" min="0" value="0">
                     <button type="button" onclick="updateQuantity('qty-stock-${productId}', 1)">+1</button>
                     <button type="button" onclick="updateQuantity('qty-stock-${productId}', 5)">+5</button>
                     <button type="button" onclick="updateQuantity('qty-stock-${productId}', 10)">+10</button>
                     <button type="button" onclick="updateQuantity('qty-stock-${productId}', 100)">+100</button>
+                    <button type="button" class="reset-btn" onclick="resetSingleQuantity('qty-stock-${productId}')">0</button>
                 </div>
             </div>
         `;
@@ -84,11 +83,12 @@ function renderItemLists() {
                 
                 <div id="sale-qty-controls-${productId}" class="quantity-controls" style="margin-top: 5px; margin-left: 20px; display: none;">
                     <label for="qty-sale-${productId}" style="font-weight: normal; display: inline-block; width: 50px;">数量:</label>
-                    <input type="number" id="qty-sale-${productId}" min="1" value="1">
+                    <input type="number" id="qty-sale-${productId}" min="0" value="0">
                     <button type="button" onclick="updateQuantity('qty-sale-${productId}', 1)">+1</button>
                     <button type="button" onclick="updateQuantity('qty-sale-${productId}', 5)">+5</button>
                     <button type="button" onclick="updateQuantity('qty-sale-${productId}', 10)">+10</button>
                     <button type="button" onclick="updateQuantity('qty-sale-${productId}', 100)">+100</button>
+                    <button type="button" class="reset-btn" onclick="resetSingleQuantity('qty-sale-${productId}')">0</button>
                 </div>
             </div>
         `;
@@ -103,6 +103,12 @@ function renderItemLists() {
             const controls = document.getElementById(`${idPrefix}-qty-controls-${productId}`);
             if (controls) {
                 controls.style.display = e.target.checked ? 'block' : 'none';
+                
+                // チェックを外したら数量を0に戻す
+                if (!e.target.checked) {
+                    const input = document.getElementById(`qty-${idPrefix}-${productId}`);
+                    if (input) input.value = 0;
+                }
             }
         });
     });
@@ -113,15 +119,21 @@ function updateQuantity(inputId, value) {
     const input = document.getElementById(inputId);
     let currentValue = parseInt(input.value) || 0;
     
-    // 数量を追加
     let newValue = currentValue + value;
 
-    // 負の値にならないようにする
-    if (newValue < 1) {
-        newValue = 1;
+    if (newValue < 0) {
+        newValue = 0;
     }
     
     input.value = newValue;
+}
+
+// 個別リセット関数
+function resetSingleQuantity(inputId) {
+    const input = document.getElementById(inputId);
+    if (input) {
+        input.value = 0;
+    }
 }
 
 
@@ -244,7 +256,7 @@ async function submitData(event, type) {
                 const quantity = parseInt(quantityInput.value);
 
                 if (isNaN(quantity) || quantity < 1) {
-                     alert(`${item.value} の数量を正しく入力してください。`);
+                     alert(`${item.value} の数量を正しく入力してください（1以上）。`);
                      throw new Error("Invalid quantity"); 
                 }
 
@@ -257,7 +269,7 @@ async function submitData(event, type) {
                 });
             });
         } catch(e) {
-            if (e.message === "Invalid quantity") return; // エラーメッセージ表示済み
+            if (e.message === "Invalid quantity") return;
             throw e;
         }
         
@@ -284,11 +296,16 @@ async function submitData(event, type) {
                 const productId = item.id.split('-').slice(1).join('-');
                 const quantityInput = document.getElementById(`qty-sale-${productId}`);
                 const quantity = parseInt(quantityInput.value);
-                const unitPrice = parseFloat(item.dataset.price); // HTMLのdata-price属性から単価を取得
+                const unitPrice = parseFloat(item.dataset.price);
 
-                if (isNaN(quantity) || quantity < 1 || unitPrice === 0) {
-                     alert(`${item.value} の数量を正しく入力するか、単価情報（スプシ）を確認してください。`);
-                     throw new Error("Invalid quantity or price"); 
+                if (isNaN(quantity) || quantity < 1) {
+                     alert(`${item.value} の数量を正しく入力してください（1以上）。`);
+                     throw new Error("Invalid quantity"); 
+                }
+                
+                if (unitPrice === 0 || isNaN(unitPrice)) {
+                     alert(`${item.value} の単価情報が（スプシで）設定されていません。`);
+                     throw new Error("Invalid price");
                 }
                 
                 const totalAmount = unitPrice * quantity;
@@ -302,7 +319,7 @@ async function submitData(event, type) {
                 });
             });
         } catch(e) {
-            if (e.message === "Invalid quantity or price") return; // エラーメッセージ表示済み
+            if (e.message === "Invalid quantity" || e.message === "Invalid price") return;
             throw e;
         }
     } else {
@@ -318,7 +335,6 @@ async function submitData(event, type) {
             const response = await fetch(GAS_WEB_APP_URL, {
                 method: 'POST',
                 body: JSON.stringify(dataToSend),
-                // CROS問題解決のため headers: { 'Content-Type': 'application/json' } は意図的に削除
             });
             const result = await response.json();
 
