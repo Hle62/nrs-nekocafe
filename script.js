@@ -1,6 +1,6 @@
 // ==========================================================
-// ★ 1. 【設定必須】ステップ2-3で取得したGASのウェブアプリURLをここに貼り付けてください
-const GAS_WEB_APP_URL = '【ここにGASのウェブアプリURLを貼り付け】'; 
+// ★ 1. 【設定必須】ここにウェブアプリURLをここに貼り付けてください
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwRe84cPNCe-JxWTWz__JKNmsvGZCdfuVBaF-VpNC0wxdbcQaOygbimt0nCbZGI7YJP/exec'; 
 // ==========================================================
 
 let productList = []; // 商品情報を格納
