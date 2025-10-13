@@ -1,6 +1,6 @@
 // ==========================================================
 // ★ 1. 【設定必須】GASのウェブアプリURLをここに貼り付けてください
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwRe84cPNCe-JxWTWz__JKNmsvGZCdfuVBaF-VpNC0wxdbcQaOygbimt0nCbZGI7YJP/exec'; 
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwRe84cPNCe-JxWTWz__JKNmsvGZCdfuVBaF-VpNC0wxdbcQaOygbimt0nCbZGI7YJP/exec'; 
 // ==========================================================
 
 let productList = []; // 商品情報を格納
@@ -14,7 +14,7 @@ async function fetchStaffNames() {
     
     try {
         const response = await fetch(staffUrl);
-        const staffNames = await response.json(); 
+        const staffNames = await response.json(); 
         
         staffDropdown.innerHTML = '<option value="">-- 名前を選択してください --</option>';
 
@@ -54,7 +54,7 @@ function renderItemLists() {
     saleListDiv.innerHTML = '<label>販売記録商品:</label><br>';
 
     productList.forEach(product => {
-        const productId = product.name.replace(/\s/g, ''); 
+        const productId = product.name.replace(/\s/g, ''); 
 
         // 1. 在庫補充リスト (stock)
         const stockHtml = `
@@ -183,12 +183,12 @@ async function attemptLogin() {
             localStorage.setItem('loggedInStaff', staffName);
             
             document.getElementById('login-section').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block'; 
-            document.getElementById('current-staff-display').textContent = `${staffName}さんとしてログイン中`; 
+            document.getElementById('main-app').style.display = 'block'; 
+            document.getElementById('current-staff-display').textContent = `${staffName}さんとしてログイン中`; 
             messageElement.textContent = '';
             
             // フォーム表示時に商品データを取得し、フォームに反映
-            await fetchProductData(); 
+            await fetchProductData(); 
             
             // 初回は「在庫補充」タブを表示
             showTab('stock');
@@ -238,16 +238,19 @@ async function submitData(event, type) {
     }
     
     // 複数データを格納するための配列
-    let records = []; 
+    let records = []; 
     const form = event.target;
     
     if (type === '在庫補充') {
         const selectedItems = form.querySelectorAll('input[name="stock_item"]:checked');
         const memo = form.querySelector('#memo-stock').value;
 
-        if (selectedItems.length === 0 && memo.trim() === '') {
-            alert('補充する商品を1つ以上選択するか、メモを入力してください。');
-            return;
+        if (selectedItems.length === 0) {
+            if (memo.trim() === '') {
+                alert('補充する商品を1つ以上選択するか、メモを入力してください。');
+                return;
+            }
+            // メモのみの送信を許可するため、ここでrecords.pushは行わない
         }
         
         // エラーチェックとデータ構築
@@ -259,7 +262,7 @@ async function submitData(event, type) {
 
                 if (isNaN(quantity) || quantity < 1) {
                      alert(`${item.value} の数量を正しく入力してください（1以上）。`);
-                     throw new Error("Invalid quantity"); 
+                     throw new Error("Invalid quantity"); 
                 }
 
                 records.push({
@@ -269,6 +272,21 @@ async function submitData(event, type) {
                     "メモ": memo
                 });
             });
+
+            // 商品が未選択でメモのみの場合の処理 (recordsが空になるため、ここでは処理しない)
+            if (records.length === 0 && memo.trim() !== '') {
+                 // 仮のレコードを作成（スプレッドシートの形式を維持するため）
+                 records.push({
+                     "item_type": "stock_memo",
+                     "商品名": 'メモのみ',
+                     "数量": 0,
+                     "メモ": memo
+                 });
+            } else if (records.length === 0 && memo.trim() === '') {
+                 alert('補充する商品を1つ以上選択するか、メモを入力してください。');
+                 return;
+            }
+
         } catch(e) {
             if (e.message === "Invalid quantity") return;
             throw e;
@@ -300,7 +318,7 @@ async function submitData(event, type) {
 
                 if (isNaN(quantity) || quantity < 1) {
                      alert(`${item.value} の数量を正しく入力してください（1以上）。`);
-                     throw new Error("Invalid quantity"); 
+                     throw new Error("Invalid quantity"); 
                 }
                 
                 if (unitPrice === 0 || isNaN(unitPrice)) {
@@ -328,9 +346,9 @@ async function submitData(event, type) {
 
     // ★ 複数データ送信をGASが一括処理できるように、配列を送信
     const bulkData = {
-        "type": type, 
+        "type": type, 
         "担当者名": loggedInStaff, // 正しいキーを使用
-        "records": records 
+        "records": records 
     };
 
     try {
@@ -338,19 +356,23 @@ async function submitData(event, type) {
             method: 'POST',
             body: JSON.stringify(bulkData),
         });
+
+        // 通信が成功したが、GAS側でエラーが発生した可能性があるためJSON応答を解析
         const result = await response.json();
 
         if (result.result === 'success') {
             alert(`${type}のデータ ${records.length} 件が正常に送信され、Discordに通知されました！`);
             form.reset();
         } else if (result.result === 'error') {
-             alert(`送信エラーが発生しました (GASエラー: ${result.message})。システム管理者に連絡してください。`);
+            // ★ GASで捕捉した具体的なエラーメッセージを表示
+            alert(`送信エラーが発生しました (GASエラー: ${result.message})。システム管理者に連絡してください。`);
         } else {
             alert('データの送信に失敗しました。予期せぬ応答です。');
         }
     } catch (error) {
         console.error('通信エラー:', error);
-        alert('致命的な通信エラーが発生しました。システム管理者に連絡してください。');
+        // ★ ここで「致命的な通信エラー」が表示されます。
+        alert(`致命的な通信エラーが発生しました。インターネット接続、またはGASのデプロイ設定を確認してください。エラー詳細: ${error.message}`);
     }
 }
 
