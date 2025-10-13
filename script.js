@@ -65,8 +65,12 @@ function renderItemLists() {
     saleListDiv.innerHTML = '<label>販売記録商品:</label><br>';
 
     productList.forEach(product => {
-        // 商品名からIDを生成する際に、全角スペースや特殊文字を削除
-        const productId = String(product.name).replace(/[\s\W_]/g, ''); 
+        // ★★★ 修正箇所: 商品名からIDとして安全な文字列を生成 ★★★
+        // すべてのスペース、全角文字、特殊文字を削除または安全な文字に置換してIDを作成
+        const safeProductName = String(product.name).replace(/\s+/g, '').replace(/[^a-zA-Z0-9_-]/g, '');
+        const productId = safeProductName; 
+        // ★★★ 修正箇所: ここまで ★★★
+
 
         // 1. 在庫補充リスト (stock)
         const stockHtml = `
@@ -110,8 +114,11 @@ function renderItemLists() {
     // チェックボックスの状態変更時に数量コントロールを表示/非表示にするイベントリスナーを設定
     document.querySelectorAll('input[type="checkbox"][name$="_item"]').forEach(checkbox => {
         checkbox.addEventListener('change', (e) => {
-            const idPrefix = e.target.id.startsWith('stock') ? 'stock' : 'sale';
-            const productId = e.target.id.split('-').slice(1).join('-');
+            // IDの取得方法も調整
+            const parts = e.target.id.split('-');
+            const idPrefix = parts[0]; // stock または sale
+            const productId = parts.slice(1).join('-'); // 商品名から作った安全なID
+
             const controls = document.getElementById(`${idPrefix}-qty-controls-${productId}`);
             if (controls) {
                 controls.style.display = e.target.checked ? 'block' : 'none';
@@ -276,7 +283,7 @@ async function submitData(event, type) {
             if (records.length === 0 && memo.trim() !== '') {
                  records.push({
                      "item_type": "stock_memo",
-                     "商品名": 'メモのみ', // GASでこの値がシートのどの列に入るか確認してください
+                     "商品名": 'メモのみ', 
                      "数量": 0,
                      "メモ": memo
                  });
@@ -349,21 +356,18 @@ async function submitData(event, type) {
             body: JSON.stringify(bulkData),
         });
 
-        // 応答がHTTP 200 OKでも、GAS側でエラーのJSONが返る可能性を考慮
         const result = await response.json();
 
         if (result.result === 'success') {
             alert(`${type}のデータ ${records.length} 件が正常に送信され、Discordに通知されました！`);
             form.reset();
         } else if (result.result === 'error') {
-            // ★ GASで捕捉した具体的なエラーメッセージを表示
             alert(`送信エラーが発生しました (GASエラー): ${result.message}`);
         } else {
             alert('データの送信に失敗しました。予期せぬ応答です。');
         }
     } catch (error) {
         console.error('通信エラー:', error);
-        // ★ 致命的なエラーはここで捕捉されます
         alert(`致命的な通信エラーが発生しました。システム管理者/デプロイ設定を確認してください。エラー詳細: ${error.message}`);
     }
 }
