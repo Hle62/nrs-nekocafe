@@ -6,29 +6,30 @@
     <title>猫カフェ管理アプリ</title>
     <style>
         /* ベースカラー: 薄いピンク (#FFE8F0) と白 (#FFFFFF) */
-        /* アクセントカラー: 淡い茶色 (#A59393) と濃いピンク (#F08080) */
+        /* アクセントカラー: 濃いピンク (#F08080) と濃い茶色 (#4F3F3F) */
         
         body {
             font-family: sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f4f4f9; /* ベースカラーの薄いピンク系に戻す */
-            color: #333;
+            background-color: #FFE8F0; /* ベースの薄ピンク */
+            color: #4F3F3F; /* 全体フォント色を濃い茶色に */
         }
         #app-container {
             max-width: 600px;
             margin: auto;
-            background: white; /* アプリ本体は白 */
-            padding: 20px;
-            border-radius: 8px; /* 角を丸く */
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            background: #FFFFFF;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 15px rgba(240, 128, 128, 0.2);
         }
         h1 {
-            color: #333;
+            color: #F08080; /* 濃いピンク */
             text-align: center;
-            border-bottom: 2px solid #ccc;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            border-bottom: 3px dashed #A59393;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            font-size: 1.8em;
         }
         #login-section, #main-app {
             padding: 10px;
@@ -38,54 +39,61 @@
         }
         label {
             display: block;
-            margin-top: 10px;
+            margin-top: 15px;
             font-weight: bold;
+            color: #4F3F3F; /* ラベル色を濃い茶色に */
         }
         input[type="text"], input[type="number"], select, textarea {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             margin-top: 5px;
             margin-bottom: 10px;
             box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            border: 1px solid #A59393; /* ボーダーを濃い目の淡い茶色に */
+            border-radius: 8px;
+            background-color: #FFFFFF; /* 背景を白に固定してコントラスト確保 */
+            color: #333;
         }
         button {
-            background-color: #5cb85c;
+            background-color: #F08080; /* 濃いピンク */
             color: white;
-            padding: 10px 15px;
+            padding: 12px 15px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 15px;
             width: 100%;
-            font-size: 16px;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #4cae4c;
+            background-color: #DC6D6D;
         }
         /* --- タブデザイン --- */
         .tab-bar {
             display: flex;
             margin-bottom: 20px;
-            border-bottom: 2px solid #ccc;
+            border-bottom: 2px solid #FFE8F0; 
         }
         .tab-button {
             flex-grow: 1;
             padding: 10px;
             border: none;
-            background-color: #f0f0f0;
+            background-color: #FFF9FC; 
             cursor: pointer;
-            border-radius: 4px 4px 0 0;
+            border-radius: 8px 8px 0 0;
             font-weight: bold;
-            color: #555;
-            transition: background-color 0.3s;
-            margin-right: 2px;
+            color: #4F3F3F; 
+            transition: all 0.3s;
+            margin-right: 4px;
+            border: 1px solid #FFE8F0;
         }
         .tab-button.active {
-            background-color: white;
-            border-bottom: 2px solid #5cb85c;
-            color: #333;
+            background-color: #FFFFFF;
+            border-bottom: 3px solid #F08080;
+            color: #F08080; 
+            z-index: 1;
         }
         .form-content {
             padding: 15px 0;
@@ -93,80 +101,87 @@
         }
         /* --- 数量コントロール --- */
         .quantity-controls input[type="number"] {
-            width: 80px;
+            width: 70px;
             display: inline-block;
             margin-right: 5px;
         }
+        .quantity-controls label {
+            color: #4F3F3F; 
+        }
         .quantity-controls button {
             width: auto;
-            padding: 5px 10px;
-            margin: 0 2px;
-            font-size: 14px;
-            background-color: #337ab7;
+            padding: 6px 12px;
+            margin: 0 4px;
+            font-size: 0.9em;
+            background-color: #A59393; 
         }
         .quantity-controls button:hover {
-            background-color: #286090;
+            background-color: #8C7C7C; 
         }
         .quantity-controls .reset-btn {
-            background-color: #f0ad4e;
+            background-color: #F08080; 
         }
         .quantity-controls .reset-btn:hover {
-            background-color: #ec971f;
+            background-color: #DC6D6D;
         }
         /* --- 認証情報エリア --- */
-        .info-display {
+        #auth-info {
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             font-size: 0.9em;
-            color: #555;
-            margin-bottom: 10px;
-            border-bottom: 1px dashed #ccc;
-            padding-bottom: 5px;
+            color: #4F3F3F; 
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #A59393; 
+            padding-bottom: 8px;
         }
         #current-staff-display {
              font-weight: bold;
-             color: green;
+             color: #F08080;
         }
         #logout-btn {
-             background-color: #dc3545;
+             background-color: #A59393;
              padding: 5px 10px;
              font-size: 0.8em;
              width: auto;
              margin: 0;
         }
         #logout-btn:hover {
-             background-color: #c82333;
+             background-color: #8C7C7C;
         }
 
         /* --- 合計金額表示 --- */
         #sale-total-display {
-            font-size: 1.2em;
+            font-size: 1.3em;
             font-weight: bold;
-            color: #333;
-            margin: 10px 0;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            color: #F08080;
+            margin: 20px 0 10px 0;
+            padding: 10px;
+            border: 2px solid #F08080; 
+            border-radius: 8px;
             text-align: center;
-            background-color: #f9f9f9;
+            background-color: #FFF9FC;
         }
         .item-box {
-            border: 1px solid #eee; /* アイテムの枠を薄く */
+            border: 1px solid #FFE8F0; 
             padding: 10px; 
             margin-bottom: 10px; 
-            border-radius: 4px;
-            background-color: #ffffff;
+            border-radius: 8px;
+            background-color: #FFF9FC;
+        }
+        .item-box input[type="checkbox"] {
+            transform: scale(1.2); 
+            margin-right: 8px;
         }
     </style>
 </head>
 <body>
     <div id="app-container">
-        <h1>猫カフェ業務管理</h1>
+        <h1>🐈 猫カフェ業務管理</h1>
         <div id="login-section">
             <label for="login-staff">担当者名</label>
             <select id="login-staff"></select>
-            <p id="login-message" style="color: red;"></p>
+            <p id="login-message" style="color: #F08080;"></p>
             <button onclick="attemptLogin()">ログイン</button>
         </div>
 
@@ -209,7 +224,7 @@
             <div id="expense-form" class="form-content">
                 <form id="expense-form-data" onsubmit="submitData(event, '経費申請')">
                     <label>費目</label>
-                    <input type="text" id="category-expense" value="材料費" readonly style="background-color: #eee;">
+                    <input type="text" id="category-expense" value="材料費" readonly style="background-color: #F8F8F8; border: 1px solid #ccc; color: #4F3F3F;">
 
                     <label for="amount-expense">金額</label>
                     <input type="number" id="amount-expense" required min="1" inputmode="numeric">
