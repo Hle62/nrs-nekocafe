@@ -354,10 +354,7 @@ async function submitData(event, type) {
         
     } else if (type === '経費申請') {
         const memo = form.querySelector('#memo-expense').value;
-        if (memo.trim() === '') {
-            alert('経費申請にはメモが必須です。');
-            return;
-        }
+        // メモの必須チェックを削除
 
         records.push({
             "item_type": "expense",
