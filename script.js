@@ -3,7 +3,8 @@
 const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwRe84cPNCe-JxWTWz__JKNmsvGZCdfuVBaF-VpNC0wxdbcQaOygbimt0nCbZGI7YJP/exec'; 
 // ==========================================================
 // ★ 2. 【設定必須】販売記録に適用する一律の商品単価をここに設定してください
-const SALE_UNIT_PRICE = 300; // 例: 全ての商品を300円と仮定
+// const SALE_UNIT_PRICE = 300; // ★修正: 不要になったため、定義を削除
+// ★商品リストから個別の価格を取得するように修正しました。
 
 let productList = []; // 商品情報を格納
 
@@ -80,9 +81,11 @@ async function fetchProductData() {
         document.getElementById('sale-item-list').innerHTML = loadingMessageRender;
         
         // 商品名と連番のみを保持
+        // ★修正: price情報を保持するようにした（GAS側は既に修正済み）
         productList = fullProductList.map((p, index) => ({
             name: p.name,
-            id: `item-${index}` // 連番ID
+            id: `item-${index}`, // 連番ID
+            price: parseFloat(p.price) || 0 // 確実に数値として保持
         }));
         
         // DOM構築の実行
@@ -131,7 +134,7 @@ function renderItemLists() {
         const saleHtml = `
             <div class="item-box">
                 <input type="checkbox" id="sale-${productId}" name="sale_item" value="${product.name}" style="width: auto;">
-                <label for="sale-${productId}" style="display: inline; font-weight: normal; color: #333;">${product.name}</label>
+                <label for="sale-${productId}" style="display: inline; font-weight: normal; color: #333;">${product.name} (¥${product.price.toLocaleString()})</label>
                 
                 <div id="sale-qty-controls-${productId}" class="quantity-controls" style="margin-top: 5px; margin-left: 20px; display: none;">
                     <label for="qty-sale-${productId}" style="font-weight: normal; display: inline-block; width: 50px; margin-top: 0;">数量</label>
@@ -230,17 +233,11 @@ function updateSaleTotalDisplay() {
         const productId = parts.slice(2).join('-'); 
         const checkbox = document.getElementById(`sale-${productId}`);
         
-        // チェックが入っていて、数量が正の場合のみ加算
         if (checkbox && checkbox.checked && quantity > 0) {
-            // ★修正: 個別単価の取得ロジックが必要だが、ここでは固定値は使わない
-            // (GASから取得したproductListを使って個別単価を取得する必要があるが、
-            //  今回は単価を取得していないため、計算ロジックは簡略化)
-            
-            // 一律単価のロジックを使用 (SALE_UNIT_PRICEを削除したため、商品リストから価格を取得する必要がある)
-            // 修正されたGASコードで、productListは価格情報を持っています。
-            const product = productList.find(p => p.id === checkbox.id.split('-').slice(1).join('-'));
-            const unitPrice = product ? parseFloat(product.price) : SALE_UNIT_PRICE; // FALLBACKとしてSALE_UNIT_PRICEを使用
-            
+            // ★修正: productListから該当商品の価格を取得し、数値変換を強制
+            const product = productList.find(p => p.id === productId);
+            const unitPrice = product ? parseFloat(product.price) : 0; // 価格が見つからない場合は 0
+
             totalSales += quantity * unitPrice;
         }
     });
