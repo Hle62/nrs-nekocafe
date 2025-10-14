@@ -1,6 +1,6 @@
 // ==========================================================
 // ★ 1. 【設定必須】GASのウェブアプリURLをここに貼り付けてください
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxCL39W2eAtbpkf7Rz45AEEVv65AMfsagBl5WKSiwRIV2wdOkerXlM8G86FDMWUKBnGrA/exec'; 
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyjKsxOIjgVgeruSg9vJtfmVjngrPujJ9m_XWVSxzCYvBv0Xfwf0WCUZ1gd0ORPDtLL/exec'; 
 // ==========================================================
 // ★ 2. 【設定必須】販売記録に適用する一律の商品単価をここに設定してください
 const SALE_UNIT_PRICE = 300; // 例: 全ての商品を300円と仮定
