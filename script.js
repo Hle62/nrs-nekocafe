@@ -36,8 +36,7 @@ async function fetchStaffNames() {
     
     try {
         const response = await fetch(staffUrl);
-        // 通信が成功しても中身がエラーJSONの場合があるため、JSONを待機
-        const staffNames = await response.json();  
+        const staffNames = await response.json(); 
         
         if (staffNames.error) {
              throw new Error(staffNames.error);
@@ -53,9 +52,8 @@ async function fetchStaffNames() {
         });
     } catch (error) {
         console.error('従業員リスト取得エラー:', error);
-        // ★修正: 読み込み中をエラーメッセージに置き換える
         staffDropdown.innerHTML = '<option value="">エラー: 従業員リスト取得失敗</option>';
-        alert(`致命的なエラー: 従業員リストの取得に失敗しました。GASのデプロイ設定を確認してください。`);
+        alert(`従業員リストの取得に失敗しました。GASエラー: ${error.message}`);
     }
 }
 
