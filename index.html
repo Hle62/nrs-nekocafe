@@ -1,575 +1,249 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>業務管理アプリ</title>
-  <style>
-    body { font-family: sans-serif; margin: 0; padding: 15px; background-color: #f4f4f9; }
-    #app-container { max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    h2 { text-align: center; }
-    #login-section select, #login-section button, button[type="submit"] { width: 100%; padding: 12px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
-    #login-section button, button[type="submit"] { background-color: #007bff; color: white; cursor: pointer; }
-    #login-section button:disabled, button[type="submit"]:disabled { background-color: #cccccc; }
-    #main-app { display: none; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .tab-nav { display: flex; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
-    .tab-button { flex: 1; padding: 12px; text-align: center; background: #e9ecef; border: none; cursor: pointer; }
-    .tab-button.active { background: #fff; border: 2px solid #ddd; border-bottom: 2px solid #fff; margin-bottom: -2px; font-weight: bold; }
-    .form-content { display: none; padding: 20px; border: 1px solid #ddd; border-top: none; }
-    .item-box { padding: 8px 0; }
-    .quantity-controls button { margin-left: 5px; }
-    #sale-total-display { font-size: 1.2em; font-weight: bold; text-align: right; margin-top: 20px; }
-    input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; margin-bottom:10px;}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猫カフェ管理アプリ</title>
+    <style>
+        /* ベースカラー: 薄いピンク (#FFE8F0) と白 (#FFFFFF) */
+        /* アクセントカラー: 濃いピンク (#F08080) と濃い茶色 (#4F3F3F) */
+        
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFE8F0; /* ベースの薄ピンク */
+            color: #4F3F3F; /* 全体フォント色を濃い茶色に */
+        }
+        
+        #app-container {
+            max-width: 600px;
+            margin: auto;
+            background: #FFFFFF;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 15px rgba(240, 128, 128, 0.2);
+        }
+
+        h1 {
+            color: #F08080; /* 濃いピンク */
+            text-align: center;
+            border-bottom: 3px dashed #A59393;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+        #login-section, #main-app {
+            padding: 10px;
+        }
+        #main-app {
+            display: none; 
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #4F3F3F; /* ラベル色を濃い茶色に */
+        }
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            border: 1px solid #A59393; /* ボーダーを濃い目の淡い茶色に */
+            border-radius: 8px;
+            background-color: #FFFFFF;
+            color: #333;
+        }
+        button {
+            background-color: #F08080; /* 濃いピンク */
+            color: white;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #DC6D6D;
+        }
+        /* --- タブデザイン --- */
+        .tab-bar {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #FFE8F0; 
+        }
+        .tab-button {
+            flex-grow: 1;
+            padding: 10px;
+            border: none;
+            background-color: #FFF9FC; 
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            font-weight: bold;
+            color: #4F3F3F; 
+            transition: all 0.3s;
+            margin-right: 4px;
+            border: 1px solid #FFE8F0;
+        }
+        .tab-button.active {
+            background-color: #FFFFFF;
+            border-bottom: 3px solid #F08080;
+            color: #F08080; 
+            z-index: 1;
+        }
+        .form-content {
+            padding: 15px 0;
+            border-top: 0;
+        }
+        /* --- 数量コントロール --- */
+        .quantity-controls input[type="number"] {
+            width: 70px;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .quantity-controls label {
+            color: #4F3F3F; 
+        }
+        .quantity-controls button {
+            width: auto;
+            padding: 6px 12px;
+            margin: 0 4px;
+            font-size: 0.9em;
+            background-color: #A59393; 
+        }
+        .quantity-controls button:hover {
+            background-color: #8C7C7C; 
+        }
+        .quantity-controls .reset-btn {
+            background-color: #F08080; 
+        }
+        .quantity-controls .reset-btn:hover {
+            background-color: #DC6D6D;
+        }
+        /* --- 認証情報エリア --- */
+        #auth-info {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-size: 0.9em;
+            color: #4F3F3F; 
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #A59393; 
+            padding-bottom: 8px;
+        }
+        #current-staff-display {
+             font-weight: bold;
+             color: #F08080;
+        }
+        #logout-btn {
+             background-color: #A59393;
+             padding: 5px 10px;
+             font-size: 0.8em;
+             width: auto;
+             margin: 0;
+        }
+        #logout-btn:hover {
+             background-color: #8C7C7C;
+        }
+
+        /* --- 合計金額表示 --- */
+        #sale-total-display {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #F08080;
+            margin: 20px 0 10px 0;
+            padding: 10px;
+            border: 2px solid #F08080; 
+            border-radius: 8px;
+            text-align: center;
+            background-color: #FFF9FC;
+        }
+        .item-box {
+            border: 1px solid #FFE8F0; 
+            padding: 10px; 
+            margin-bottom: 10px; 
+            border-radius: 8px;
+            background-color: #FFF9FC;
+        }
+        .item-box input[type="checkbox"] {
+            transform: scale(1.2); 
+            margin-right: 8px;
+        }
+    </style>
 </head>
 <body>
-  <div id="app-container" style="display:none;">
-    <div id="login-section">
-      <h2>ログイン</h2>
-      <select id="login-staff"><option>-- 読み込み中 --</option></select>
-      <button onclick="attemptLogin(event)">ログイン</button>
-      <p id="login-message" style="color:red;"></p>
-    </div>
-    <div id="main-app">
-      <div class="header">
-        <span id="current-staff-display"></span>
-        <button onclick="logout()" style="width:auto;padding:8px 12px;">ログアウト</button>
-      </div>
-      <div class="tab-nav">
-        <button class="tab-button" onclick="showTab('stock')">在庫補充</button>
-        <button class="tab-button" onclick="showTab('expense')">経費申請</button>
-        <button class="tab-button" onclick="showTab('sale')">販売記録</button>
-      </div>
-      <div id="stock-form" class="form-content">
-        <form onsubmit="submitData(event, '在庫補充')">
-          <div id="stock-item-list"></div>
-          <label>メモ</label><textarea id="memo-stock" rows="3"></textarea>
-          <button type="submit">在庫を補充</button>
-        </form>
-      </div>
-      <div id="expense-form" class="form-content">
-        <form onsubmit="submitData(event, '経費申請')">
-          <label>金額</label><input type="number" id="amount-expense" required>
-          <label>メモ</label><textarea id="memo-expense" rows="3"></textarea>
-          <button type="submit">経費を申請</button>
-        </form>
-      </div>
-      <div id="sale-form" class="form-content">
-        <form onsubmit="submitData(event, '販売記録')">
-          <div id="sale-item-list"></div>
-          <label>メモ</label><textarea id="memo-sale" rows="3"></textarea>
-          <div id="sale-total-display">合計金額 ¥0</div>
-          <button type="submit">販売を記録</button>
-        </form>
-      </div>
-    </div>
-  </div>
+    
+    <div id="app-container">
+        <h1>🐈 猫カフェ業務管理</h1>
+        <div id="login-section">
+            <label for="login-staff">担当者名</label>
+            <select id="login-staff">
+                <option value="">従業員リストを読み込み中...</option> 
+            </select>
+            <p id="login-message" style="color: #F08080;"></p> 
+            <button onclick="attemptLogin()">ログイン</button>
+        </div>
 
-  <script>
-    // ==========================================================
-    // ★ 1. 【設定必須】GASのウェブアプリURLをここに貼り付けてください
-    const GAS_WEB_APP_URL = '（ここにステップ4でコピーするURLを貼り付け）'; 
-    // ==========================================================
-    // ★ 2. 【設定必須】販売記録に適用する一律の商品単価をここに設定してください
-    const SALE_UNIT_PRICE = 300; // 例: 全ての商品を300円と仮定
-
-    let productList = []; // 商品情報を格納
-
-    // --- ログアウト関数 ---
-    function logout() {
-        localStorage.removeItem('loggedInStaff');
-        window.location.reload();
-    }
-    // ----------------------------------
-
-    // ★新規関数: メインアプリを表示する処理を統合
-    function showMainApp(staffName) {
-        document.getElementById('current-staff-display').textContent = `${staffName}さんとしてログイン中`;
-        
-        // ログイン画面を非表示にし、メイン画面を表示
-        document.getElementById('login-section').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block';
-        
-        // 初回は「在庫補充」タブを表示
-        showTab('stock');
-    }
-
-
-    // --- データの取得 ---
-
-    // 従業員名リストを取得し、プルダウンを構築
-    async function fetchStaffNames() {
-        const staffUrl = `${GAS_WEB_APP_URL}?action=getStaffNames`;
-        const staffDropdown = document.getElementById('login-staff');
-        
-        try {
-            const response = await fetch(staffUrl);
-            const staffNames = await response.json(); 
+        <div id="main-app" style="display: none;">
+            <div id="auth-info" class="info-display">
+                 <div id="current-staff-display"></div>
+                 <button id="logout-btn" onclick="logout()">ログアウト</button>
+            </div>
             
-            if (staffNames.error) {
-                 throw new Error(staffNames.error);
-            }
+            <div class="tab-bar">
+                <button class="tab-button" onclick="showTab('stock')">在庫補充</button>
+                <button class="tab-button" onclick="showTab('sale')">販売記録</button>
+                <button class="tab-button" onclick="showTab('expense')">経費申請</button>
+            </div>
 
-            staffDropdown.innerHTML = '<option value="">-- 名前を選択してください --</option>';
-
-            staffNames.forEach(name => {
-                const option = document.createElement('option');
-                option.value = name;
-                option.textContent = name;
-                staffDropdown.appendChild(option);
-            });
-        } catch (error) {
-            console.error('従業員リスト取得エラー:', error);
-            staffDropdown.innerHTML = '<option value="">エラー: 従業員リスト取得失敗</option>';
-            alert(`従業員リストの取得に失敗しました。GASエラー: ${error.message}`);
-        }
-    }
-
-    // 商品データを取得し、フォームのチェックボックスに反映
-    async function fetchProductData() {
-        const productUrl = `${GAS_WEB_APP_URL}?action=getProducts`;
-        
-        try {
-            // GASからのデータ取得中にメッセージを表示 
-            const loadingMessageFetch = '<p>商品リストデータをGASから取得中...</p>';
-            document.getElementById('stock-item-list').innerHTML = loadingMessageFetch;
-            document.getElementById('sale-item-list').innerHTML = loadingMessageFetch;
-            
-            const response = await fetch(productUrl);
-            const fullProductList = await response.json(); 
-
-            if (fullProductList.error) {
-                 throw new Error(fullProductList.error);
-            }
-            
-            // データ取得完了後、DOM構築中にメッセージを表示 (ユーザーフィードバック)
-            const loadingMessageRender = '<p>リスト要素描画中...</p>';
-            document.getElementById('stock-item-list').innerHTML = loadingMessageRender;
-            document.getElementById('sale-item-list').innerHTML = loadingMessageRender;
-            
-            // 商品名と連番のみを保持
-            productList = fullProductList.map((p, index) => ({
-                name: p.name,
-                id: `item-${index}` // 連番ID
-            }));
-            
-            // DOM構築の実行
-            renderItemLists();
-        } catch (error) {
-            console.error('商品情報取得エラー:', error);
-            // エラーメッセージを具体的に
-            document.getElementById('stock-item-list').innerHTML = '<p style="color:red;">エラー: 商品リスト取得失敗。再ログインしてください。</p>';
-            document.getElementById('sale-item-list').innerHTML = '<p style="color:red;">エラー: 商品リスト取得失敗。再ログインしてください。</p>';
-            alert(`商品情報の取得に失敗しました。GASエラー: ${error.message}`);
-            throw error;
-        }
-    }
-
-    // チェックボックスと数量フィールドを生成する関数
-    function renderItemLists() {
-        const stockListDiv = document.getElementById('stock-item-list');
-        const saleListDiv = document.getElementById('sale-item-list');
-
-        stockListDiv.innerHTML = '<label>在庫補充商品</label><br>';
-        saleListDiv.innerHTML = '<label>販売記録商品</label><br>'; 
-
-        productList.forEach(product => {
-            const productId = product.id; 
-            
-            // 1. 在庫補充リスト (stock)
-            const stockHtml = `
-                <div class="item-box">
-                    <input type="checkbox" id="stock-${productId}" name="stock_item" value="${product.name}" style="width: auto;">
-                    <label for="stock-${productId}" style="display: inline; font-weight: normal; color: #333;">${product.name}</label>
-                    
-                    <div id="stock-qty-controls-${productId}" class="quantity-controls" style="margin-top: 5px; margin-left: 20px; display: none;">
-                        <label for="qty-stock-${productId}" style="font-weight: normal; display: inline-block; width: 50px; margin-top: 0;">数量</label>
-                        <input type="number" id="qty-stock-${productId}" min="0" value="0">
-                        <button type="button" onclick="updateQuantity('qty-stock-${productId}', 1, 'stock')">+1</button>
-                        <button type="button" onclick="updateQuantity('qty-stock-${productId}', 5, 'stock')">+5</button>
-                        <button type="button" onclick="updateQuantity('qty-stock-${productId}', 10, 'stock')">+10</button>
-                        <button type="button" onclick="updateQuantity('qty-stock-${productId}', 100, 'stock')">+100</button>
-                        <button type="button" class="reset-btn" onclick="resetSingleQuantity('qty-stock-${productId}', 'stock')">0</button>
+            <div id="stock-form" class="form-content">
+                <form id="stock-form-data" onsubmit="submitData(event, '在庫補充')">
+                    <div id="stock-item-list">
+                        <p>商品リストを読み込み中...</p>
                     </div>
-                </div>
-            `;
-            stockListDiv.insertAdjacentHTML('beforeend', stockHtml);
-            
-            // 2. 販売記録リスト (sale)
-            const saleHtml = `
-                <div class="item-box">
-                    <input type="checkbox" id="sale-${productId}" name="sale_item" value="${product.name}" style="width: auto;">
-                    <label for="sale-${productId}" style="display: inline; font-weight: normal; color: #333;">${product.name}</label>
-                    
-                    <div id="sale-qty-controls-${productId}" class="quantity-controls" style="margin-top: 5px; margin-left: 20px; display: none;">
-                        <label for="qty-sale-${productId}" style="font-weight: normal; display: inline-block; width: 50px; margin-top: 0;">数量</label>
-                        <input type="number" id="qty-sale-${productId}" min="0" value="0" data-item-id="${productId}">
-                        <button type="button" onclick="updateQuantity('qty-sale-${productId}', 1, 'sale')">+1</button>
-                        <button type="button" onclick="updateQuantity('qty-sale-${productId}', 5, 'sale')">+5</button>
-                        <button type="button" onclick="updateQuantity('qty-sale-${productId}', 10, 'sale')">+10</button>
-                        <button type="button" onclick="updateQuantity('qty-sale-${productId}', 100, 'sale')">+100</button>
-                        <button type="button" class="reset-btn" onclick="resetSingleQuantity('qty-sale-${productId}', 'sale')">0</button>
+                    <label for="memo-stock">共通メモ (任意)</label>
+                    <textarea id="memo-stock" rows="2"></textarea>
+                    <button type="submit">在庫補充を送信</button>
+                </form>
+            </div>
+
+            <div id="sale-form" class="form-content">
+                <form id="sale-form-data" onsubmit="submitData(event, '販売記録')">
+                    <div id="sale-item-list">
+                        <p>商品リストを読み込み中...</p>
                     </div>
-                </div>
-            `;
-            saleListDiv.insertAdjacentHTML('beforeend', saleHtml);
-        });
-        
-        // イベントリスナーを一括で設定
-        document.querySelectorAll('input[type="checkbox"][name$="_item"]').forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => {
-                const parts = e.target.id.split('-');
-                const idPrefix = parts[0]; 
-                const productId = parts.slice(1).join('-'); 
-                
-                const controls = document.getElementById(`${idPrefix}-qty-controls-${productId}`);
-                if (controls) {
-                    controls.style.display = e.target.checked ? 'block' : 'none';
                     
-                    // チェックを外したら数量を0に戻す
-                    const input = document.getElementById(`qty-${idPrefix}-${productId}`);
-                    if (!e.target.checked && input) {
-                        input.value = 0;
-                    }
+                    <label for="memo-sale">メモ (任意)</label>
+                    <textarea id="memo-sale" rows="2"></textarea>
                     
-                    // チェックボックス変更時に合計金額を再計算
-                    if (idPrefix === 'sale') {
-                        updateSaleTotalDisplay();
-                    }
-                }
-            });
-        });
+                    <div id="sale-total-display">合計金額 ¥0</div> 
 
-        // 数量入力フィールドにchangeとinputイベントリスナーを設定（リアルタイム反映のため）
-        document.querySelectorAll('input[id^="qty-sale-"]').forEach(input => {
-            input.addEventListener('input', updateSaleTotalDisplay);
-            input.addEventListener('change', updateSaleTotalDisplay);
-        });
+                    <button type="submit">販売記録を送信</button>
+                </form>
+            </div>
 
-        // 初期表示時に合計金額をリセット
-        updateSaleTotalDisplay();
-    }
+            <div id="expense-form" class="form-content">
+                <form id="expense-form-data" onsubmit="submitData(event, '経費申請')">
+                    <label>費目</label>
+                    <input type="text" id="category-expense" value="材料費" readonly style="background-color: #F8F8F8; border: 1px solid #ccc; color: #4F3F3F;">
 
-    // 数量ボタンの処理関数
-    function updateQuantity(inputId, value, type) {
-        const input = document.getElementById(inputId);
-        let currentValue = parseInt(input.value) || 0;
-        
-        let newValue = currentValue + value;
-
-        if (newValue < 0) {
-            newValue = 0;
-        }
-        
-        input.value = newValue;
-        
-        // イベントを手動で発火させ、リアルタイム計算をトリガー
-        if (type === 'sale') {
-            const event = new Event('change');
-            input.dispatchEvent(event); 
-        }
-    }
-
-    // 個別リセット関数
-    function resetSingleQuantity(inputId, type) {
-        const input = document.getElementById(inputId);
-        if (input) {
-            input.value = 0;
-        }
-        
-        // イベントを手動で発火させる
-        if (type === 'sale') {
-            const event = new Event('change');
-            input.dispatchEvent(event);
-        }
-    }
-
-    // 販売記録の合計金額をリアルタイムで更新する関数
-    function updateSaleTotalDisplay() {
-        const totalDisplay = document.getElementById('sale-total-display');
-        const saleQtyInputs = document.querySelectorAll('input[id^="qty-sale-"]');
-        let totalSales = 0;
-        
-        saleQtyInputs.forEach(input => {
-            const quantity = parseInt(input.value) || 0;
-            
-            // 関連するチェックボックスがチェックされているか確認
-            const parts = input.id.split('-');
-            const productId = parts.slice(2).join('-'); 
-            const checkbox = document.getElementById(`sale-${productId}`);
-            
-            // チェックが入っていて、数量が正の場合のみ加算
-            if (checkbox && checkbox.checked && quantity > 0) {
-                totalSales += quantity * SALE_UNIT_PRICE;
-            }
-        });
-
-        totalDisplay.textContent = `合計金額 ¥${totalSales.toLocaleString()}`;
-    }
-
-
-    // --- ページロード時の自動ログインチェック処理 ---
-    function checkLoginStatus() {
-        const loggedInStaff = localStorage.getItem('loggedInStaff');
-        
-        if (loggedInStaff) {
-            document.getElementById('login-section').style.display = 'none';
-            document.getElementById('current-staff-display').textContent = `${loggedInStaff}さんとしてログイン中`;
-            
-            fetchProductData().then(() => {
-                showMainApp(loggedInStaff);
-            }).catch(error => {
-                document.getElementById('login-section').style.display = 'block';
-                document.getElementById('main-app').style.display = 'none';
-                document.getElementById('login-message').textContent = 'データ取得エラーのため、リロードまたは再ログインしてください。';
-            });
-            
-            return true;
-        }
-        return false;
-    }
-
-
-    // --- ログイン処理 ---
-    async function attemptLogin(event) {
-        const staffName = document.getElementById('login-staff').value;
-        const messageElement = document.getElementById('login-message');
-        const loginButton = event.target;
-        const originalButtonText = loginButton.textContent;
-        
-        if (!staffName) {
-            messageElement.textContent = '名前を選択してください。';
-            return;
-        }
-        
-        loginButton.textContent = '認証中...';
-        loginButton.disabled = true;
-        messageElement.textContent = '';
-        document.getElementById('login-message').style.display = 'block';
-
-        const authUrl = `${GAS_WEB_APP_URL}?staffName=${encodeURIComponent(staffName)}`;
-
-        try {
-            const response = await fetch(authUrl);
-            const result = await response.json();
-
-            if (result.authenticated) {
-                localStorage.setItem('loggedInStaff', staffName);
-                loginButton.textContent = '認証成功！';
-                messageElement.textContent = '商品リストをロード中...'; 
-                
-                await fetchProductData(); 
-                
-                showMainApp(staffName);
-                
-                document.getElementById('login-message').style.display = 'none';
-
-            } else if (result.error) {
-                 messageElement.textContent = `エラー ${result.error}`;
-            } else {
-                messageElement.textContent = 'エラー その名前はシステムに登録されていません。';
-            }
-        } catch (error) {
-            console.error('認証エラー:', error);
-            messageElement.textContent = '致命的な認証エラーが発生しました。';
-        } finally {
-            if (!localStorage.getItem('loggedInStaff')) {
-                 loginButton.textContent = originalButtonText;
-                 loginButton.disabled = false;
-            }
-        }
-    }
-
-    // --- タブ切り替え関数 ---
-    function showTab(tabId) {
-        document.querySelectorAll('.tab-button').forEach(button => {
-            button.classList.remove('active');
-            if (button.getAttribute('onclick').includes(`'${tabId}'`)) {
-                button.classList.add('active');
-            }
-        });
-
-        document.querySelectorAll('.form-content').forEach(content => {
-            content.style.display = 'none';
-        });
-
-        const contentElement = document.getElementById(`${tabId}-form`);
-        if (contentElement) {
-            contentElement.style.display = 'block';
-            
-            if (tabId === 'sale') {
-                updateSaleTotalDisplay();
-            }
-        }
-    }
-
-    // --- データ送信処理 (複数データ送信対応) ---
-    async function submitData(event, type) {
-        event.preventDefault();
-        
-        const submitButton = event.target.querySelector('button[type="submit"]');
-        const originalButtonText = submitButton.textContent;
-        
-        submitButton.textContent = '送信中...';
-        submitButton.disabled = true;
-
-        const loggedInStaff = localStorage.getItem('loggedInStaff');
-        if (!loggedInStaff) {
-            alert('ログイン情報が失効しています。再度ログインしてください。');
-            window.location.reload();
-            return;
-        }
-        
-        let records = []; 
-        const form = event.target;
-        
-        if (type === '在庫補充') {
-            const selectedItems = form.querySelectorAll('input[name="stock_item"]:checked');
-            const memo = form.querySelector('#memo-stock').value;
-
-            if (selectedItems.length === 0 && memo.trim() === '') {
-                 alert('補充する商品を1つ以上選択するか、メモを入力してください。');
-                 submitButton.textContent = originalButtonText;
-                 submitButton.disabled = false;
-                 return;
-            }
-            
-            try {
-                selectedItems.forEach(item => {
-                    const parts = item.id.split('-');
-                    const productId = parts.slice(1).join('-');
-                    const quantityInput = document.getElementById(`qty-stock-${productId}`);
-                    const quantity = parseInt(quantityInput.value);
-
-                    if (isNaN(quantity) || quantity < 1) {
-                         alert(`${item.value} の数量を正しく入力してください（1以上）。`);
-                         throw new Error("Invalid quantity"); 
-                    }
-
-                    records.push({
-                        "商品名": item.value,
-                        "数量": quantity,
-                        "メモ": memo
-                    });
-                });
-
-                if (records.length === 0 && memo.trim() !== '') {
-                     records.push({
-                         "商品名": 'メモのみ', 
-                         "数量": 0,
-                         "メモ": memo
-                     });
-                }
-            } catch(e) {
-                if (e.message === "Invalid quantity") {
-                     submitButton.textContent = originalButtonText;
-                     submitButton.disabled = false;
-                     return;
-                }
-                throw e;
-            }
-            
-        } else if (type === '経費申請') {
-            const memo = form.querySelector('#memo-expense').value;
-            records.push({
-                "費目": '材料費', 
-                "金額": form.querySelector('#amount-expense').value,
-                "メモ": memo
-            });
-        } else if (type === '販売記録') {
-            const selectedItems = form.querySelectorAll('input[name="sale_item"]:checked');
-            const memo = form.querySelector('#memo-sale').value; 
-
-            if (selectedItems.length === 0) {
-                alert('販売した商品を1つ以上選択してください。');
-                submitButton.textContent = originalButtonText;
-                submitButton.disabled = false;
-                return;
-            }
-
-            try {
-                selectedItems.forEach(item => {
-                    const parts = item.id.split('-');
-                    const productId = parts.slice(1).join('-');
-                    const quantityInput = document.getElementById(`qty-sale-${productId}`);
-                    const quantity = parseInt(quantityInput.value);
-                    const unitPrice = SALE_UNIT_PRICE; 
+                    <label for="amount-expense">金額</label>
+                    <input type="number" id="amount-expense" required min="1" inputmode="numeric">
                     
-                    if (isNaN(quantity) || quantity < 1) {
-                         alert(`${item.value} の数量を正しく入力してください（1以上）。`);
-                         throw new Error("Invalid quantity"); 
-                    }
+                    <label for="memo-expense">メモ (任意)</label>
+                    <textarea id="memo-expense" rows="2"></textarea>
                     
-                    const totalAmount = unitPrice * quantity;
-                    
-                    records.push({
-                        "商品名": item.value,
-                        "数量": quantity,
-                        "売上金額": totalAmount,
-                        "メモ": memo 
-                    });
-                });
-            } catch(e) {
-                if (e.message === "Invalid quantity") {
-                     submitButton.textContent = originalButtonText;
-                     submitButton.disabled = false;
-                     return;
-                }
-                throw e;
-            }
-        } else {
-            alert('無効なフォームです。');
-            submitButton.textContent = originalButtonText;
-            submitButton.disabled = false;
-            return;
-        }
-
-        const bulkData = { "type": type, "担当者名": loggedInStaff, "records": records };
-
-        try {
-            const response = await fetch(GAS_WEB_APP_URL, {
-                method: 'POST',
-                body: JSON.stringify(bulkData),
-            });
-            const result = await response.json();
-            if (result.result === 'success') {
-                alert(`${type}のデータが正常に送信されました！`);
-                form.reset();
-                document.querySelectorAll('input[name$="_item"]:checked').forEach(item => {
-                    item.checked = false;
-                    const parts = item.id.split('-');
-                    const idPrefix = parts[0]; 
-                    const productId = parts.slice(1).join('-'); 
-                    const controls = document.getElementById(`${idPrefix}-qty-controls-${productId}`);
-                    if (controls) {
-                        controls.style.display = 'none'; 
-                    }
-                    const input = document.getElementById(`qty-${idPrefix}-${productId}`);
-                    if (input) input.value = 0; 
-                });
-                if (type === '販売記録') {
-                    updateSaleTotalDisplay();
-                }
-            } else {
-                alert(`送信エラー: ${result.message}`);
-            }
-        } catch (error) {
-            console.error('通信エラー:', error);
-            alert(`致命的な通信エラーが発生しました。`);
-        } finally {
-            submitButton.textContent = originalButtonText;
-            submitButton.disabled = false;
-        }
-    }
-
-    // --- ページロード時の初期処理 ---
-    document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('app-container').style.display = 'block';
-        if (!checkLoginStatus()) {
-            fetchStaffNames();
-        }
-    });
-  </script>
+                    <button type="submit">経費申請を送信</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
