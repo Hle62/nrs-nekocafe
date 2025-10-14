@@ -1,249 +1,249 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>猫カフェ管理アプリ</title>
-    <style>
-        /* ベースカラー: 薄いピンク (#FFE8F0) と白 (#FFFFFF) */
-        /* アクセントカラー: 濃いピンク (#F08080) と濃い茶色 (#4F3F3F) */
-        
-        body {
-            font-family: sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #FFE8F0; /* ベースの薄ピンク */
-            color: #4F3F3F; /* 全体フォント色を濃い茶色に */
-        }
-        
-        #app-container {
-            max-width: 600px;
-            margin: auto;
-            background: #FFFFFF;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 8px 15px rgba(240, 128, 128, 0.2);
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猫カフェ管理アプリ</title>
+    <style>
+        /* ベースカラー: 薄いピンク (#FFE8F0) と白 (#FFFFFF) */
+        /* アクセントカラー: 濃いピンク (#F08080) と濃い茶色 (#4F3F3F) */
+        
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #FFE8F0; /* ベースの薄ピンク */
+            color: #4F3F3F; /* 全体フォント色を濃い茶色に */
+        }
+        
+        #app-container {
+            max-width: 600px;
+            margin: auto;
+            background: #FFFFFF;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 15px rgba(240, 128, 128, 0.2);
+        }
 
-        h1 {
-            color: #F08080; /* 濃いピンク */
-            text-align: center;
-            border-bottom: 3px dashed #A59393;
-            padding-bottom: 15px;
-            margin-bottom: 25px;
-            font-size: 1.8em;
-        }
-        #login-section, #main-app {
-            padding: 10px;
-        }
-        #main-app {
-            display: none; 
-        }
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: bold;
-            color: #4F3F3F; /* ラベル色を濃い茶色に */
-        }
-        input[type="text"], input[type="number"], select, textarea {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-            border: 1px solid #A59393; /* ボーダーを濃い目の淡い茶色に */
-            border-radius: 8px;
-            background-color: #FFFFFF;
-            color: #333;
-        }
-        button {
-            background-color: #F08080; /* 濃いピンク */
-            color: white;
-            padding: 12px 15px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 15px;
-            width: 100%;
-            font-size: 1em;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #DC6D6D;
-        }
-        /* --- タブデザイン --- */
-        .tab-bar {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #FFE8F0; 
-        }
-        .tab-button {
-            flex-grow: 1;
-            padding: 10px;
-            border: none;
-            background-color: #FFF9FC; 
-            cursor: pointer;
-            border-radius: 8px 8px 0 0;
-            font-weight: bold;
-            color: #4F3F3F; 
-            transition: all 0.3s;
-            margin-right: 4px;
-            border: 1px solid #FFE8F0;
-        }
-        .tab-button.active {
-            background-color: #FFFFFF;
-            border-bottom: 3px solid #F08080;
-            color: #F08080; 
-            z-index: 1;
-        }
-        .form-content {
-            padding: 15px 0;
-            border-top: 0;
-        }
-        /* --- 数量コントロール --- */
-        .quantity-controls input[type="number"] {
-            width: 70px;
-            display: inline-block;
-            margin-right: 5px;
-        }
-        .quantity-controls label {
-            color: #4F3F3F; 
-        }
-        .quantity-controls button {
-            width: auto;
-            padding: 6px 12px;
-            margin: 0 4px;
-            font-size: 0.9em;
-            background-color: #A59393; 
-        }
-        .quantity-controls button:hover {
-            background-color: #8C7C7C; 
-        }
-        .quantity-controls .reset-btn {
-            background-color: #F08080; 
-        }
-        .quantity-controls .reset-btn:hover {
-            background-color: #DC6D6D;
-        }
-        /* --- 認証情報エリア --- */
-        #auth-info {
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            font-size: 0.9em;
-            color: #4F3F3F; 
-            margin-bottom: 15px;
-            border-bottom: 1px dashed #A59393; 
-            padding-bottom: 8px;
-        }
-        #current-staff-display {
-             font-weight: bold;
-             color: #F08080;
-        }
-        #logout-btn {
-             background-color: #A59393;
-             padding: 5px 10px;
-             font-size: 0.8em;
-             width: auto;
-             margin: 0;
-        }
-        #logout-btn:hover {
-             background-color: #8C7C7C;
-        }
+        h1 {
+            color: #F08080; /* 濃いピンク */
+            text-align: center;
+            border-bottom: 3px dashed #A59393;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+        #login-section, #main-app {
+            padding: 10px;
+        }
+        #main-app {
+            display: none; 
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #4F3F3F; /* ラベル色を濃い茶色に */
+        }
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            border: 1px solid #A59393; /* ボーダーを濃い目の淡い茶色に */
+            border-radius: 8px;
+            background-color: #FFFFFF;
+            color: #333;
+        }
+        button {
+            background-color: #F08080; /* 濃いピンク */
+            color: white;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #DC6D6D;
+        }
+        /* --- タブデザイン --- */
+        .tab-bar {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #FFE8F0; 
+        }
+        .tab-button {
+            flex-grow: 1;
+            padding: 10px;
+            border: none;
+            background-color: #FFF9FC; 
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            font-weight: bold;
+            color: #4F3F3F; 
+            transition: all 0.3s;
+            margin-right: 4px;
+            border: 1px solid #FFE8F0;
+        }
+        .tab-button.active {
+            background-color: #FFFFFF;
+            border-bottom: 3px solid #F08080;
+            color: #F08080; 
+            z-index: 1;
+        }
+        .form-content {
+            padding: 15px 0;
+            border-top: 0;
+        }
+        /* --- 数量コントロール --- */
+        .quantity-controls input[type="number"] {
+            width: 70px;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .quantity-controls label {
+            color: #4F3F3F; 
+        }
+        .quantity-controls button {
+            width: auto;
+            padding: 6px 12px;
+            margin: 0 4px;
+            font-size: 0.9em;
+            background-color: #A59393; 
+        }
+        .quantity-controls button:hover {
+            background-color: #8C7C7C; 
+        }
+        .quantity-controls .reset-btn {
+            background-color: #F08080; 
+        }
+        .quantity-controls .reset-btn:hover {
+            background-color: #DC6D6D;
+        }
+        /* --- 認証情報エリア --- */
+        #auth-info {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-size: 0.9em;
+            color: #4F3F3F; 
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #A59393; 
+            padding-bottom: 8px;
+        }
+        #current-staff-display {
+             font-weight: bold;
+             color: #F08080;
+        }
+        #logout-btn {
+             background-color: #A59393;
+             padding: 5px 10px;
+             font-size: 0.8em;
+             width: auto;
+             margin: 0;
+        }
+        #logout-btn:hover {
+             background-color: #8C7C7C;
+        }
 
-        /* --- 合計金額表示 --- */
-        #sale-total-display {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #F08080;
-            margin: 20px 0 10px 0;
-            padding: 10px;
-            border: 2px solid #F08080; 
-            border-radius: 8px;
-            text-align: center;
-            background-color: #FFF9FC;
-        }
-        .item-box {
-            border: 1px solid #FFE8F0; 
-            padding: 10px; 
-            margin-bottom: 10px; 
-            border-radius: 8px;
-            background-color: #FFF9FC;
-        }
-        .item-box input[type="checkbox"] {
-            transform: scale(1.2); 
-            margin-right: 8px;
-        }
-    </style>
+        /* --- 合計金額表示 --- */
+        #sale-total-display {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #F08080;
+            margin: 20px 0 10px 0;
+            padding: 10px;
+            border: 2px solid #F08080; 
+            border-radius: 8px;
+            text-align: center;
+            background-color: #FFF9FC;
+        }
+        .item-box {
+            border: 1px solid #FFE8F0; 
+            padding: 10px; 
+            margin-bottom: 10px; 
+            border-radius: 8px;
+            background-color: #FFF9FC;
+        }
+        .item-box input[type="checkbox"] {
+            transform: scale(1.2); 
+            margin-right: 8px;
+        }
+    </style>
 </head>
 <body>
-    
-    <div id="app-container">
-        <h1>🐈 猫カフェ業務管理</h1>
-        <div id="login-section">
-            <label for="login-staff">担当者名</label>
-            <select id="login-staff">
-                <option value="">従業員リストを読み込み中...</option> 
-            </select>
-            <p id="login-message" style="color: #F08080;"></p> 
-            <button onclick="attemptLogin()">ログイン</button>
-        </div>
+    
+    <div id="app-container">
+        <h1>🐈 猫カフェ業務管理</h1>
+        <div id="login-section">
+            <label for="login-staff">担当者名</label>
+            <select id="login-staff">
+                <option value="">従業員リストを読み込み中...</option> 
+            </select>
+            <p id="login-message" style="color: #F08080;"></p> 
+            <button onclick="attemptLogin()">ログイン</button>
+        </div>
 
-        <div id="main-app" style="display: none;">
-            <div id="auth-info" class="info-display">
-                 <div id="current-staff-display"></div>
-                 <button id="logout-btn" onclick="logout()">ログアウト</button>
-            </div>
-            
-            <div class="tab-bar">
-                <button class="tab-button" onclick="showTab('stock')">在庫補充</button>
-                <button class="tab-button" onclick="showTab('sale')">販売記録</button>
-                <button class="tab-button" onclick="showTab('expense')">経費申請</button>
-            </div>
+        <div id="main-app" style="display: none;">
+            <div id="auth-info" class="info-display">
+                 <div id="current-staff-display"></div>
+                 <button id="logout-btn" onclick="logout()">ログアウト</button>
+            </div>
+            
+            <div class="tab-bar">
+                <button class="tab-button" onclick="showTab('stock')">在庫補充</button>
+                <button class="tab-button" onclick="showTab('sale')">販売記録</button>
+                <button class="tab-button" onclick="showTab('expense')">経費申請</button>
+            </div>
 
-            <div id="stock-form" class="form-content">
-                <form id="stock-form-data" onsubmit="submitData(event, '在庫補充')">
-                    <div id="stock-item-list">
-                        <p>商品リストを読み込み中...</p>
-                    </div>
-                    <label for="memo-stock">共通メモ (任意)</label>
-                    <textarea id="memo-stock" rows="2"></textarea>
-                    <button type="submit">在庫補充を送信</button>
-                </form>
-            </div>
+            <div id="stock-form" class="form-content">
+                <form id="stock-form-data" onsubmit="submitData(event, '在庫補充')">
+                    <div id="stock-item-list">
+                        <p>商品リストを読み込み中...</p>
+                    </div>
+                    <label for="memo-stock">共通メモ (任意)</label>
+                    <textarea id="memo-stock" rows="2"></textarea>
+                    <button type="submit">在庫補充を送信</button>
+                </form>
+            </div>
 
-            <div id="sale-form" class="form-content">
-                <form id="sale-form-data" onsubmit="submitData(event, '販売記録')">
-                    <div id="sale-item-list">
-                        <p>商品リストを読み込み中...</p>
-                    </div>
-                    
-                    <label for="memo-sale">メモ (任意)</label>
-                    <textarea id="memo-sale" rows="2"></textarea>
-                    
-                    <div id="sale-total-display">合計金額 ¥0</div> 
+            <div id="sale-form" class="form-content">
+                <form id="sale-form-data" onsubmit="submitData(event, '販売記録')">
+                    <div id="sale-item-list">
+                        <p>商品リストを読み込み中...</p>
+                    </div>
+                    
+                    <label for="memo-sale">メモ (任意)</label>
+                    <textarea id="memo-sale" rows="2"></textarea>
+                    
+                    <div id="sale-total-display">合計金額 ¥0</div> 
 
-                    <button type="submit">販売記録を送信</button>
-                </form>
-            </div>
+                    <button type="submit">販売記録を送信</button>
+                </form>
+            </div>
 
-            <div id="expense-form" class="form-content">
-                <form id="expense-form-data" onsubmit="submitData(event, '経費申請')">
-                    <label>費目</label>
-                    <input type="text" id="category-expense" value="材料費" readonly style="background-color: #F8F8F8; border: 1px solid #ccc; color: #4F3F3F;">
+            <div id="expense-form" class="form-content">
+                <form id="expense-form-data" onsubmit="submitData(event, '経費申請')">
+                    <label>費目</label>
+                    <input type="text" id="category-expense" value="材料費" readonly style="background-color: #F8F8F8; border: 1px solid #ccc; color: #4F3F3F;">
 
-                    <label for="amount-expense">金額</label>
-                    <input type="number" id="amount-expense" required min="1" inputmode="numeric">
-                    
-                    <label for="memo-expense">メモ (任意)</label>
-                    <textarea id="memo-expense" rows="2"></textarea>
-                    
-                    <button type="submit">経費申請を送信</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    <script src="script.js"></script>
+                    <label for="amount-expense">金額</label>
+                    <input type="number" id="amount-expense" required min="1" inputmode="numeric">
+                    
+                    <label for="memo-expense">メモ (任意)</label>
+                    <textarea id="memo-expense" rows="2"></textarea>
+                    
+                    <button type="submit">経費申請を送信</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
