@@ -1,7 +1,6 @@
-<script>
 // ==========================================================
 // ★ 1. 【設定必須】GASのウェブアプリURLをここに貼り付けてください
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxh2wf-cFV7MNIt92zAq1ue6dd3YQUngd4JhOXKZtFdzjTJ5eluIQ99GKM-WfY6EZyT/exec'; 
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyjKsxOIjgVgeruSg9vJtfmVjngrPujJ9m_XWVSxzCYvBv0Xfwf0WCUZ1gd0ORPDtLL/exec'; 
 // ==========================================================
 
 // ★ 2. 【価格設定】種別ごとの価格をここで設定
@@ -322,4 +321,3 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('app-container').style.display = 'block';
   }
 });
-</script>
