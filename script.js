@@ -1,12 +1,11 @@
-<script>
 // ==========================================================
 // ★ 1. 【設定必須】GASのウェブアプリURLをここに貼り付けてください
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby1oHTm9gjv-o5GbIOAsE8VKJvMdFeI74nRX1f9gkrsI_wEbQsu6LinacYQ2m1HWx2U/exec';
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby1oHTm9gjv-o5GbIOAsE8VKJvMdFeI74nRX1f9gkrsI_wEbQsu6LinacYQ2m1HWx2U/exec'; 
 // ==========================================================
-// ★ 2. 廃止: 一律の商品単価設定は不要になりました
-// const SALE_UNIT_PRICE = 300; 
+// ★ 2. 【設定必須】販売記録に適用する一律の商品単価をここに設定してください
+const SALE_UNIT_PRICE = 300; // 例: 全ての商品を300円と仮定
 
-let productList = []; // 商品情報を格納 (価格情報も含むように変更)
+let productList = []; // 商品情報を格納
 
 // --- ログアウト関数 ---
 function logout() {
@@ -37,7 +36,7 @@ async function fetchStaffNames() {
     
     try {
         const response = await fetch(staffUrl);
-        const staffNames = await response.json(); 
+        const staffNames = await response.json(); 
         
         if (staffNames.error) {
              throw new Error(staffNames.error);
@@ -80,10 +79,9 @@ async function fetchProductData() {
         document.getElementById('stock-item-list').innerHTML = loadingMessageRender;
         document.getElementById('sale-item-list').innerHTML = loadingMessageRender;
         
-        // ★ 変更点: 商品名、価格、連番IDを保持するように修正
+        // 商品名と連番のみを保持
         productList = fullProductList.map((p, index) => ({
             name: p.name,
-            price: p.price || 0, // 価格情報を保持
             id: `item-${index}` // 連番ID
         }));
         
@@ -130,7 +128,6 @@ function renderItemLists() {
         stockListDiv.insertAdjacentHTML('beforeend', stockHtml);
         
         // 2. 販売記録リスト (sale)
-        // ★ 変更点: inputタグに `data-price` 属性を追加して、商品価格を埋め込む
         const saleHtml = `
             <div class="item-box">
                 <input type="checkbox" id="sale-${productId}" name="sale_item" value="${product.name}" style="width: auto;">
@@ -138,7 +135,7 @@ function renderItemLists() {
                 
                 <div id="sale-qty-controls-${productId}" class="quantity-controls" style="margin-top: 5px; margin-left: 20px; display: none;">
                     <label for="qty-sale-${productId}" style="font-weight: normal; display: inline-block; width: 50px; margin-top: 0;">数量</label>
-                    <input type="number" id="qty-sale-${productId}" min="0" value="0" data-item-id="${productId}" data-price="${product.price}">
+                    <input type="number" id="qty-sale-${productId}" min="0" value="0" data-item-id="${productId}">
                     <button type="button" onclick="updateQuantity('qty-sale-${productId}', 1, 'sale')">+1</button>
                     <button type="button" onclick="updateQuantity('qty-sale-${productId}', 5, 'sale')">+5</button>
                     <button type="button" onclick="updateQuantity('qty-sale-${productId}', 10, 'sale')">+10</button>
@@ -219,7 +216,7 @@ function resetSingleQuantity(inputId, type) {
     }
 }
 
-// ★ 変更点: 販売記録の合計金額を商品ごとの単価で計算するように修正
+// 販売記録の合計金額をリアルタイムで更新する関数
 function updateSaleTotalDisplay() {
     const totalDisplay = document.getElementById('sale-total-display');
     const saleQtyInputs = document.querySelectorAll('input[id^="qty-sale-"]');
@@ -235,9 +232,7 @@ function updateSaleTotalDisplay() {
         
         // チェックが入っていて、数量が正の場合のみ加算
         if (checkbox && checkbox.checked && quantity > 0) {
-            // data-price属性から単価を取得して計算
-            const unitPrice = parseFloat(input.dataset.price) || 0;
-            totalSales += quantity * unitPrice;
+            totalSales += quantity * SALE_UNIT_PRICE;
         }
     });
 
@@ -305,7 +300,7 @@ async function attemptLogin() {
             messageElement.textContent = '商品リストをロード中...'; 
             
             // 商品データ取得を待ってから showMainApp() を呼び出す
-            await fetchProductData(); 
+            await fetchProductData(); 
             
             // Step 2: 全てのデータが揃った後、メイン画面を表示
             showMainApp(staffName);
@@ -375,7 +370,7 @@ async function submitData(event, type) {
         return;
     }
     
-    let records = []; 
+    let records = []; 
     const form = event.target;
     
     if (type === '在庫補充') {
@@ -398,7 +393,7 @@ async function submitData(event, type) {
 
                 if (isNaN(quantity) || quantity < 1) {
                      alert(`${item.value} の数量を正しく入力してください（1以上）。`);
-                     throw new Error("Invalid quantity"); 
+                     throw new Error("Invalid quantity"); 
                 }
 
                 records.push({
@@ -454,16 +449,13 @@ async function submitData(event, type) {
                 const productId = parts.slice(1).join('-');
                 const quantityInput = document.getElementById(`qty-sale-${productId}`);
                 const quantity = parseInt(quantityInput.value);
-                
-                // ★ 変更点: data-price属性から単価を取得
-                const unitPrice = parseFloat(quantityInput.dataset.price) || 0; 
+                const unitPrice = SALE_UNIT_PRICE; 
                 
                 if (isNaN(quantity) || quantity < 1) {
                      alert(`${item.value} の数量を正しく入力してください（1以上）。`);
-                     throw new Error("Invalid quantity"); 
+                     throw new Error("Invalid quantity"); 
                 }
                 
-                // ★ 変更点: 商品ごとの単価で売上金額を計算
                 const totalAmount = unitPrice * quantity;
                 
                 records.push({
@@ -490,9 +482,9 @@ async function submitData(event, type) {
     }
 
     const bulkData = {
-        "type": type, 
+        "type": type, 
         "担当者名": loggedInStaff,
-        "records": records 
+        "records": records 
     };
 
     try {
@@ -553,4 +545,3 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('app-container').style.display = 'block';
     }
 });
-</script>
