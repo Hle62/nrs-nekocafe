@@ -1,9 +1,10 @@
+<script>
 // ==========================================================
 // ★ 1. 【設定必須】GASのウェブアプリURLをここに貼り付けてください
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxCL39W2eAtbpkf7Rz45AEEVv65AMfsagBl5WKSiwRIV2wdOkerXlM8G86FDMWUKBnGrA/exec'; 
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxCL39W2eAtbpkf7Rz45AEEVv65AMfsagBl5WKSiwRIV2wdOkerXlM8G86FDMWUKBnGrA/exec';
 // ==========================================================
-// ★ 2. 【設定必須】販売記録に適用する一律の商品単価をここに設定してください
-const SALE_UNIT_PRICE = 300; // 例: 全ての商品を300円と仮定
+// ★ 修正点①: 一律単価の定数を削除
+// const SALE_UNIT_PRICE = 300; // ← この行を削除しました
 
 let productList = []; // 商品情報を格納
 
@@ -36,7 +37,7 @@ async function fetchStaffNames() {
     
     try {
         const response = await fetch(staffUrl);
-        const staffNames = await response.json(); 
+        const staffNames = await response.json(); 
         
         if (staffNames.error) {
              throw new Error(staffNames.error);
@@ -79,10 +80,11 @@ async function fetchProductData() {
         document.getElementById('stock-item-list').innerHTML = loadingMessageRender;
         document.getElementById('sale-item-list').innerHTML = loadingMessageRender;
         
-        // 商品名と連番のみを保持
+        // ★ 修正点②: GASから受け取った価格(price)も一緒に保存する
         productList = fullProductList.map((p, index) => ({
             name: p.name,
-            id: `item-${index}` // 連番ID
+            id: `item-${index}`, // 連番ID
+            price: parseFloat(p.price) || 0 // 商品ごとの価格を保持
         }));
         
         // DOM構築の実行
@@ -225,14 +227,15 @@ function updateSaleTotalDisplay() {
     saleQtyInputs.forEach(input => {
         const quantity = parseInt(input.value) || 0;
         
-        // 関連するチェックボックスがチェックされているか確認
-        const parts = input.id.split('-');
-        const productId = parts.slice(2).join('-'); 
+        // ★ 修正点③: IDを使って商品ごとの価格をproductListから見つける
+        const productId = input.getAttribute('data-item-id');
         const checkbox = document.getElementById(`sale-${productId}`);
         
         // チェックが入っていて、数量が正の場合のみ加算
         if (checkbox && checkbox.checked && quantity > 0) {
-            totalSales += quantity * SALE_UNIT_PRICE;
+            const product = productList.find(p => p.id === productId);
+            const unitPrice = product ? product.price : 0; // 商品ごとの価格を使用
+            totalSales += quantity * unitPrice;
         }
     });
 
@@ -268,7 +271,6 @@ function checkLoginStatus() {
 
 
 // --- ログイン処理 ---
-
 async function attemptLogin() {
     const staffName = document.getElementById('login-staff').value;
     const messageElement = document.getElementById('login-message');
@@ -300,7 +302,7 @@ async function attemptLogin() {
             messageElement.textContent = '商品リストをロード中...'; 
             
             // 商品データ取得を待ってから showMainApp() を呼び出す
-            await fetchProductData(); 
+            await fetchProductData(); 
             
             // Step 2: 全てのデータが揃った後、メイン画面を表示
             showMainApp(staffName);
@@ -350,7 +352,6 @@ function showTab(tabId) {
 
 
 // --- データ送信処理 (複数データ送信対応) ---
-
 async function submitData(event, type) {
     event.preventDefault();
     
@@ -370,7 +371,7 @@ async function submitData(event, type) {
         return;
     }
     
-    let records = []; 
+    let records = []; 
     const form = event.target;
     
     if (type === '在庫補充') {
@@ -393,7 +394,7 @@ async function submitData(event, type) {
 
                 if (isNaN(quantity) || quantity < 1) {
                      alert(`${item.value} の数量を正しく入力してください（1以上）。`);
-                     throw new Error("Invalid quantity"); 
+                     throw new Error("Invalid quantity"); 
                 }
 
                 records.push({
@@ -449,11 +450,14 @@ async function submitData(event, type) {
                 const productId = parts.slice(1).join('-');
                 const quantityInput = document.getElementById(`qty-sale-${productId}`);
                 const quantity = parseInt(quantityInput.value);
-                const unitPrice = SALE_UNIT_PRICE; 
+                
+                // ★ 修正点④: ここでも商品ごとの価格を使って売上を計算する
+                const product = productList.find(p => p.id === productId);
+                const unitPrice = product ? product.price : 0; 
                 
                 if (isNaN(quantity) || quantity < 1) {
                      alert(`${item.value} の数量を正しく入力してください（1以上）。`);
-                     throw new Error("Invalid quantity"); 
+                     throw new Error("Invalid quantity"); 
                 }
                 
                 const totalAmount = unitPrice * quantity;
@@ -482,9 +486,9 @@ async function submitData(event, type) {
     }
 
     const bulkData = {
-        "type": type, 
+        "type": type, 
         "担当者名": loggedInStaff,
-        "records": records 
+        "records": records 
     };
 
     try {
@@ -545,3 +549,4 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('app-container').style.display = 'block';
     }
 });
+</script>
