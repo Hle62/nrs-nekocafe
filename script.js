@@ -1,7 +1,7 @@
 <script>
 // --- テスト用コード ---
 // ★ 1. 【設定必須】GASのウェブアプリURLをここに貼り付けてください
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxCL39W2eAtbpkf7Rz45AEEVv65AMfsagBl5WKSiwRIV2wdOkerXlM8G86FDMWUKBnGrA/exec'; // 必ずご自身のURLにしてください
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxLEO7wkzKD-MaQYFcJXdKrhuuArMwq2l1gFgVyoaf0tvkA1NmX4m-xlUP8a2jSi8w/exec'; // 必ずご自身のURLにしてください
 
 // 従業員名リストを取得する機能だけをテスト
 async function fetchStaffNames() {
