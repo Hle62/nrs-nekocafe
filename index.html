@@ -37,7 +37,6 @@
             padding: 10px;
         }
         #main-app {
-            /* ログイン成功時にdisplay: blockが設定される */
             display: none; 
         }
         label {
@@ -191,7 +190,8 @@
             <button onclick="attemptLogin()">ログイン</button>
         </div>
 
-        <div id="main-app" style="display: none;"> <div id="auth-info" class="info-display">
+        <div id="main-app" style="display: none;">
+            <div id="auth-info" class="info-display">
                  <div id="current-staff-display"></div>
                  <button id="logout-btn" onclick="logout()">ログアウト</button>
             </div>

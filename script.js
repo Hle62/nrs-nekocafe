@@ -14,7 +14,7 @@ function logout() {
 }
 // ----------------------------------
 
-// ★新規関数: メインアプリを表示する処理を統合
+// ★メインアプリを表示する処理を統合
 function showMainApp(staffName) {
     document.getElementById('current-staff-display').textContent = `${staffName}さんとしてログイン中`;
     
@@ -232,7 +232,16 @@ function updateSaleTotalDisplay() {
         
         // チェックが入っていて、数量が正の場合のみ加算
         if (checkbox && checkbox.checked && quantity > 0) {
-            totalSales += quantity * SALE_UNIT_PRICE;
+            // ★修正: 個別単価の取得ロジックが必要だが、ここでは固定値は使わない
+            // (GASから取得したproductListを使って個別単価を取得する必要があるが、
+            //  今回は単価を取得していないため、計算ロジックは簡略化)
+            
+            // 一律単価のロジックを使用 (SALE_UNIT_PRICEを削除したため、商品リストから価格を取得する必要がある)
+            // 修正されたGASコードで、productListは価格情報を持っています。
+            const product = productList.find(p => p.id === checkbox.id.split('-').slice(1).join('-'));
+            const unitPrice = product ? parseFloat(product.price) : SALE_UNIT_PRICE; // FALLBACKとしてSALE_UNIT_PRICEを使用
+            
+            totalSales += quantity * unitPrice;
         }
     });
 
@@ -241,27 +250,28 @@ function updateSaleTotalDisplay() {
 
 
 // --- ページロード時の自動ログインチェック処理 ---
-function checkLoginStatus() {
+async function checkLoginStatus() {
     const loggedInStaff = localStorage.getItem('loggedInStaff');
     
     if (loggedInStaff) {
-        // ★修正ポイント: 自動ログイン時はログインセクションは非表示
         document.getElementById('login-section').style.display = 'none';
         
         // 担当者名だけ先に設定
         document.getElementById('current-staff-display').textContent = `${loggedInStaff}さんとしてログイン中`;
         
         // 商品情報取得（非同期）が完了するのを待ってから、メインアプリを表示する
-        fetchProductData().then(() => {
-            showMainApp(loggedInStaff);
-        }).catch(error => {
+        try {
+             await fetchProductData();
+             showMainApp(loggedInStaff);
+             return true;
+        } catch (error) {
+            // エラー時はログイン画面に戻す
             document.getElementById('login-section').style.display = 'block';
             document.getElementById('main-app').style.display = 'none';
             document.getElementById('login-message').textContent = 'データ取得エラーのため、リロードまたは再ログインしてください。';
             console.error('データ取得エラーにより画面表示を完了できませんでした。', error);
-        });
-        
-        return true;
+            return false;
+        }
     }
     return false;
 }
@@ -283,7 +293,7 @@ async function attemptLogin() {
     // 認証開始時にボタンを無効化し、メッセージを表示
     loginButton.textContent = '認証中...';
     loginButton.disabled = true;
-    messageElement.textContent = ''; // メッセージをクリア
+    messageElement.textContent = ''; 
     document.getElementById('login-message').style.display = 'block';
 
     const authUrl = `${GAS_WEB_APP_URL}?staffName=${encodeURIComponent(staffName)}`;
@@ -295,14 +305,13 @@ async function attemptLogin() {
         if (result.authenticated) {
             localStorage.setItem('loggedInStaff', staffName);
             
-            // Step 1: 認証成功。商品ロードのメッセージに切り替える
-            loginButton.textContent = '認証成功！';
-            messageElement.textContent = '商品リストをロード中...'; 
+            // Step 1: 認証成功直後、商品ロードが始まる前にメッセージを表示
+            document.getElementById('login-message').textContent = '認証完了、商品リストをロード中...'; 
             
-            // 商品データ取得を待ってから showMainApp() を呼び出す
+            // Step 2: 商品データ取得を待ってから showMainApp() を呼び出す
             await fetchProductData(); 
             
-            // Step 2: 全てのデータが揃った後、メイン画面を表示
+            // Step 3: 全てのデータが揃った後、メイン画面を表示
             showMainApp(staffName);
             
             // ログインメッセージをクリア
@@ -449,7 +458,10 @@ async function submitData(event, type) {
                 const productId = parts.slice(1).join('-');
                 const quantityInput = document.getElementById(`qty-sale-${productId}`);
                 const quantity = parseInt(quantityInput.value);
-                const unitPrice = SALE_UNIT_PRICE; 
+                
+                // ★修正: 商品リストから価格を取得
+                const product = productList.find(p => p.id === item.id.split('-').slice(1).join('-'));
+                const unitPrice = product ? parseFloat(product.price) : 0; 
                 
                 if (isNaN(quantity) || quantity < 1) {
                      alert(`${item.value} の数量を正しく入力してください（1以上）。`);
@@ -540,8 +552,5 @@ document.addEventListener('DOMContentLoaded', () => {
     // ログイン情報がない場合、名前リストを取得してログイン画面を表示
     if (!checkLoginStatus()) {
         fetchStaffNames();
-        
-        // ログイン情報がない場合は、アプリコンテナを即座に表示に戻す
-        document.getElementById('app-container').style.display = 'block';
     }
 });
