@@ -2,7 +2,7 @@
 // ==========================================================
 // ★ 1. 【設定必須】GASのウェブアプリURLをここに貼り付けてください
 // ★ 必ずステップ2で取得した最新のURLに書き換えてください
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby1oHTm9gjv-o5GbIOAsE8VKJvMdFeI74nRX1f9gkrsI_wEbQsu6LinacYQ2m1HWx2U/exec'; 
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxCL39W2eAtbpkf7Rz45AEEVv65AMfsagBl5WKSiwRIV2wdOkerXlM8G86FDMWUKBnGrA/exec'; 
 // ==========================================================
 // const SALE_UNIT_PRICE = 300; // GASから商品価格を取得するため、この定数は不要です。
 
