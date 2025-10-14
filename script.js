@@ -52,8 +52,9 @@ async function fetchStaffNames() {
         });
     } catch (error) {
         console.error('従業員リスト取得エラー:', error);
+        // ★修正: エラー時にalertも表示し、ユーザーに状況を伝える
         staffDropdown.innerHTML = '<option value="">エラー: 従業員リスト取得失敗</option>';
-        alert(`従業員リストの取得に失敗しました。GASエラー: ${error.message}`);
+        alert(`致命的なエラー: 従業員リストの取得に失敗しました。GASのデプロイ設定を確認してください。`);
     }
 }
 
