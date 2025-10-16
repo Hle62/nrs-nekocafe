@@ -26,6 +26,35 @@ h1 {
     margin-bottom: 25px;
     font-size: 1.8em;
 }
+
+h2 {
+    color: #4F3F3F;
+    border-left: 5px solid #F08080;
+    padding-left: 10px;
+    margin-bottom: 15px;
+    font-size: 1.4em;
+}
+
+.category-header {
+    display: flex; 
+    justify-content: space-between;
+    align-items: baseline;
+    color: #F08080;
+    font-size: 1.2em;
+    border-bottom: 2px solid #FFE8F0;
+    padding-bottom: 5px;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    font-weight: bold; 
+}
+
+.category-price {
+    font-size: 1.1em; 
+    font-weight: bold;
+    color: #4F3F3F; 
+}
+
+
 #login-section, #main-app {
     padding: 10px;
 }
@@ -36,7 +65,7 @@ label {
     display: block;
     margin-top: 15px;
     font-weight: bold;
-    color: #4F3F3F; /* ラベル色を濃い茶色に */
+    color: #4F3F3F; 
 }
 input[type="text"], input[type="number"], select, textarea {
     width: 100%;
@@ -44,13 +73,13 @@ input[type="text"], input[type="number"], select, textarea {
     margin-top: 5px;
     margin-bottom: 10px;
     box-sizing: border-box;
-    border: 1px solid #A59393; /* ボーダーを濃い目の淡い茶色に */
+    border: 1px solid #A59393; 
     border-radius: 8px;
     background-color: #FFFFFF;
     color: #333;
 }
 button {
-    background-color: #F08080; /* 濃いピンク */
+    background-color: #F08080; 
     color: white;
     padding: 12px 15px;
     border: none;
@@ -94,35 +123,12 @@ button:hover {
     padding: 15px 0;
     border-top: 0;
 }
-/* --- 数量コントロール --- */
-.quantity-controls input[type="number"] {
-    width: 70px;
-    display: inline-block;
-    margin-right: 5px;
-}
-.quantity-controls label {
-    color: #4F3F3F; 
-}
-.quantity-controls button {
-    width: auto;
-    padding: 6px 12px;
-    margin: 0 4px;
-    font-size: 0.9em;
-    background-color: #A59393; 
-}
-.quantity-controls button:hover {
-    background-color: #8C7C7C; 
-}
-.quantity-controls .reset-btn {
-    background-color: #F08080; 
-}
-.quantity-controls .reset-btn:hover {
-    background-color: #DC6D6D;
-}
+
+
 /* --- 認証情報エリア --- */
 #auth-info {
     display: flex; 
-    justify-content: space-between; 
+    justify-content: space-between;
     align-items: center; 
     font-size: 0.9em;
     color: #4F3F3F; 
@@ -145,26 +151,162 @@ button:hover {
     background-color: #8C7C7C;
 }
 
-/* --- 合計金額表示 --- */
+/* ★★★ 合計金額とクーポンを統合表示するデザイン ★★★ */
 #sale-total-display {
-    font-size: 1.3em;
-    font-weight: bold;
-    color: #F08080;
+    /* Flexboxコンテナとして設定し、子要素を縦に並べる */
+    display: flex; 
+    flex-direction: column;
+    
     margin: 20px 0 10px 0;
     padding: 10px;
     border: 2px solid #F08080; 
     border-radius: 8px;
     text-align: center;
     background-color: #FFF9FC;
+    font-weight: bold;
 }
-.item-box {
-    border: 1px solid #FFE8F0; 
-    padding: 10px; 
-    margin-bottom: 10px; 
-    border-radius: 8px;
-    background-color: #FFF9FC;
+
+.sale-total-row, .coupon-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
 }
-.item-box input[type="checkbox"] {
+
+.sale-total-row {
+    font-size: 1.3em;
+    color: #F08080;
+}
+
+.coupon-row {
+    font-size: 1.1em;
+    color: #2E8B57; /* 緑系 */
+    border-top: 1px dashed #FFE8F0; /* 分離線 */
+    margin-top: 5px;
+    padding-top: 10px;
+}
+.coupon-row .value {
+    color: #4B0082; /* クーポン枚数を強調 */
+    font-size: 1.1em;
+}
+
+
+/* ========================================================== */
+/* ★★★ グリッドレイアウト用CSS (メディアクエリを削除) ★★★ */
+/* ========================================================== */
+
+/* デフォルト設定 (PC向け - 180px以上を維持) */
+.item-grid {
+    display: grid;
+    /* 最小幅を180pxに戻す (スマホで1列表示になる原因ですが、元の状態に戻します) */
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
+    gap: 15px; 
+    margin-top: 10px;
+    margin-bottom: 30px; 
+    
+    align-items: start; 
+}
+
+/* 個別の商品カード */
+.item-card {
+    background-color: #FFFFFF; 
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    border: 1px solid #FFE8F0;
+    transition: box-shadow 0.2s, border-color 0.2s, background-color 0.2s;
+    cursor: pointer;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; 
+    text-align: center; 
+}
+
+/* チェックされた商品カードの視覚的強調 */
+.item-card.is-checked {
+    border-color: #F08080; 
+    box-shadow: 0 4px 8px rgba(240, 128, 128, 0.2);
+    background-color: #FFF9FC; 
+}
+
+/* チェックボックスと名前を一行に（中央配置） */
+.item-checkbox-row {
+    display: flex;
+    align-items: center; 
+    justify-content: center; 
+    margin-bottom: 5px;
+}
+.item-checkbox-row input[type="checkbox"] {
     transform: scale(1.2); 
-    margin-right: 8px;
+    margin-right: 10px;
+    flex-shrink: 0; 
+    vertical-align: middle; 
+    margin-top: 0;
+    margin-bottom: 0;
 }
+.item-name-label {
+    font-weight: bold !important; 
+    color: #4F3F3F !important;
+    display: inline-flex; 
+    align-items: center;
+    line-height: 1.2;
+    margin: 0; 
+    padding: 0;
+}
+
+/* 商品ごとの価格表示は非表示 */
+.item-price {
+    display: none;
+}
+
+
+/* 数量コントロールがカード内に収まるように調整し、カードの高さが変わるのを防ぐ */
+.item-card .quantity-controls {
+    margin-top: 5px !important;
+    padding-top: 5px;
+    border-top: 1px dashed #A59393; 
+    
+    /* カードの左右paddingを打ち消し、枠線まで広げる */
+    margin-left: -15px !important; 
+    margin-right: -15px !important;
+    padding-left: 15px;
+    padding-right: 15px;
+    
+    padding-bottom: 0; 
+}
+
+.item-card .quantity-controls label {
+    display: block;
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+.item-card .quantity-controls input[type="number"] {
+    width: 100%; 
+    margin-bottom: 10px;
+    text-align: center;
+}
+.qty-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: space-between;
+    margin-bottom: 10px; 
+}
+.qty-buttons button {
+    flex-grow: 1; 
+    min-width: 40px;
+    padding: 6px 5px;
+    margin: 0;
+    font-size: 0.8em;
+    background-color: #A59393; 
+}
+.qty-buttons button:hover {
+    background-color: #8C7C7C; 
+}
+.qty-buttons .reset-btn {
+    background-color: #F08080; 
+}
+.qty-buttons .reset-btn:hover {
+    background-color: #DC6D6D;
+}
+/* ========================================================== */

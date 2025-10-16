@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>猫カフェ管理アプリ</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css"> 
 </head>
 <body>
     
@@ -21,8 +21,8 @@
 
         <div id="main-app" style="display: none;">
             <div id="auth-info" class="info-display">
-                 <div id="current-staff-display"></div>
-                 <button id="logout-btn" onclick="logout()">ログアウト</button>
+                <div id="current-staff-display"></div>
+                <button id="logout-btn" onclick="logout()">ログアウト</button>
             </div>
             
             <div class="tab-bar">
@@ -33,9 +33,12 @@
 
             <div id="stock-form" class="form-content">
                 <form id="stock-form-data" onsubmit="submitData(event, '在庫補充')">
+                    
+                    <h2>在庫補充商品リスト</h2>
                     <div id="stock-item-list">
                         <p>商品リストを読み込み中...</p>
                     </div>
+                    
                     <label for="memo-stock">共通メモ (任意)</label>
                     <textarea id="memo-stock" rows="2"></textarea>
                     <button type="submit">在庫補充を送信</button>
@@ -44,6 +47,8 @@
 
             <div id="sale-form" class="form-content">
                 <form id="sale-form-data" onsubmit="submitData(event, '販売記録')">
+                    
+                    <h2>販売商品リスト</h2>
                     <div id="sale-item-list">
                         <p>商品リストを読み込み中...</p>
                     </div>
@@ -51,7 +56,7 @@
                     <label for="memo-sale">メモ (任意)</label>
                     <textarea id="memo-sale" rows="2"></textarea>
                     
-                    <div id="sale-total-display">合計金額 ¥0</div> 
+                    <div id="sale-total-display"></div> 
 
                     <button type="submit">販売記録を送信</button>
                 </form>
